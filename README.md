@@ -10,6 +10,7 @@ Un jeu de construction spatiale en cubes, dans le navigateur. Tu es **Ballis**, 
 - Mode **Récolte** (santé, oxygène, repas) ou mode **Libre** (tout est illimité).
 - La planète **Halloween** et ses créatures, et des **extraterrestres** qui colonisent la galaxie.
 - Un **vaisseau-mère** à construire, qui voyage avec toi.
+- **Huit nouvelles sortes de planètes**, chacune avec ses animaux : **Dinosauria** (diplodocus, tricératops, ptérodactyles… et un T-rex), la **banquise** et ses pingouins, la **savane** (girafes, éléphants, zèbres), la planète d'**automne** (renards, hérissons), la planète des **cerisiers** (lapins), le **marécage** (grenouilles), la planète des **jouets** (robots et oursons) et la planète **gâteau** (bonshommes en pain d'épice). Elles sont dans la liste « Nouvelles planètes » de la carte.
 - La **planète oubliée**, cachée sous un immense dôme de verre : une jungle si épaisse qu'on s'y perd, avec des tigres, des singes et des perroquets. Suis le rayon de lumière pour retrouver ta fusée.
 - La **table d'ADNisation** : crée tes propres animaux avec des lianes, des molécules et de l'essence vivante. Choisis leur corps, leur taille, leurs couleurs, leurs yeux, leur tête, leur queue et leurs ailes. Ils te suivent partout.
 - Le **bureau scientifique** : 8 théories à compléter en répondant à des questions de science difficiles. Elles débloquent des machines, l'entrée dans les étoiles, et la création de planètes, de systèmes solaires et de galaxies.
