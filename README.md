@@ -6,10 +6,6 @@ Fore le sol rouge de Balis, construis ta base, fais le plein de ta fusée et dé
 
 ### ▶️ [Jouer maintenant](https://sarahza.github.io/chantier-orbital/)
 
-### 🎬 [Voir la bande-annonce](https://sarahza.github.io/chantier-orbital/#bande-annonce)
-
-Ballis danse sur de l'électro pendant une visite de l'univers. Clique sur « Lancer la bande-annonce » et monte le son !
-
 Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordinateur.
 
 ---
