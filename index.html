@@ -630,6 +630,17 @@ blk('verreDome','Verre du dôme',{hard:.9,color:'#aef0c8',cat:1});
 blk('pain','Pain',{hard:.1,color:'#d8a050',raw:true,food:30});
 blk('porte','Porte',{hard:.4,color:'#9a6a3a'});
 blk('porteO','Porte ouverte',{hard:.4,color:'#9a6a3a',cat:2,pass:true});
+// nouvelles planètes : dinosaures, banquise, savane, automne, cerisiers, marécage, jouets et gâteau
+blk('herbeSeche','Herbe sèche',{hard:.3,color:'#c8a84a',raw:true,ts:58,tb:27});
+blk('feuillesRousses','Feuilles d’automne',{hard:.12,color:'#e07a2a',cat:2,raw:true});
+blk('fleurCerisier','Fleurs de cerisier',{hard:.12,color:'#ffb8d8',cat:2,raw:true});
+blk('boue','Boue',{hard:.25,color:'#5a4a2e',raw:true});
+blk('oeufDino','Œuf de dinosaure',{hard:.3,color:'#e8e0b0',raw:true});
+blk('jouetRouge','Brique de jouet rouge',{hard:.3,color:'#e8342a',raw:true});
+blk('jouetBleu','Brique de jouet bleue',{hard:.3,color:'#2a6ae8',raw:true});
+blk('jouetJaune','Brique de jouet jaune',{hard:.3,color:'#f5c81a',raw:true});
+blk('jouetVert','Brique de jouet verte',{hard:.3,color:'#3ab84a',raw:true});
+blk('fougere','Fougère',{hard:.1,color:'#4aa83a',cat:2,raw:true});
 const OPAQ=new Uint8Array(BLOCKS.length);for(let i=1;i<BLOCKS.length;i++)OPAQ[i]=BLOCKS[i].cat===0?1:0;
 const SOLID=new Uint8Array(BLOCKS.length);for(let i=1;i<BLOCKS.length;i++)SOLID[i]=BLOCKS[i].liq||BLOCKS[i].pass?0:1;
 const GONE=new Set(['moquette','papierPeint','plafond','neonBR','caisse','sortie','moquetteBleue','papierFete','lampeRouge'].map(k=>ID[k]));
@@ -834,6 +845,17 @@ const atlas=document.createElement('canvas');atlas.width=TS*ACOLS;atlas.height=T
   tile(T_('pain'),(x,y)=>{const d=Math.hypot((x-7.5)/6.5,(y-8.5)/4.5);if(d>1)return[0,0,0,0];if(y>=6&&y<=11&&(x===5||x===8||x===11)&&y<10)return hex('#f4d8a0');return mul(hex(d>.8?'#a8682a':'#d89a48'),.92+R()*.12);});
   tile(T_('porte'),(x,y)=>{if(x===0||x===15||y===0)return hex('#5a3a1a');if(x===12&&y===8)return hex('#ffd23a');if(x%5===0)return hex('#7a5028');return mul(hex('#a8743e'),.92+R()*.1);});
   tile(T_('porteO'),(x,y)=>{if(x<3)return x===2?hex('#5a3a1a'):mul(hex('#a8743e'),.92+R()*.1);if(y===0)return hex('#5a3a1a');return[0,0,0,0];});
+  tile(T_('herbeSeche'),()=>{let c=mul(hex('#c8a84a'),.82+R()*.3);if(R()<.08)c=hex('#e8d07a');return c;});
+  tile(58,(x,y)=>{const edge=3+((x*7+3)%3===0?1:0);if(y<edge){let c=mul(hex('#c8a84a'),.82+R()*.3);return c;}return dirt();});
+  tile(T_('feuillesRousses'),()=>{if(R()<.16)return[0,0,0,0];return[...mul(hex(['#ff8a2a','#f0502a','#ffc03a'][R()*3|0]),.88+R()*.25),255];});
+  tile(T_('fleurCerisier'),()=>{if(R()<.14)return[0,0,0,0];if(R()<.2)return[255,240,248,255];return[...mul(hex('#ffaad0'),.85+R()*.2),255];});
+  tile(T_('boue'),(x,y)=>{if(Math.hypot((x%8)-4,(y%8)-4)<1.5)return mul(hex('#3a3020'),.9+R()*.15);return mul(hex('#5a4a2e'),.8+R()*.3);});
+  tile(T_('oeufDino'),(x,y)=>{const d=Math.hypot((x-7.5)/5.5,(y-8)/7);if(d>1)return[0,0,0,0];
+    if(Math.hypot(x-5,y-6)<1.4||Math.hypot(x-10,y-10)<1.6||Math.hypot(x-9,y-4)<1)return hex('#6aa84a');return mul(hex('#efe6c0'),(x<6&&y<7?1.08:.94)+R()*.06);});
+  const toy=c=>(x,y)=>{const b=hex(c),cx=x%8-3.5,cy=y%8-3.5,d=Math.hypot(cx,cy);if(x===0||y===0)return mul(b,1.15);if(x===15||y===15)return mul(b,.7);
+    if(d<2.2)return mul(b,d<1.4&&cx<0&&cy<0?1.28:1.08);if(d<2.8)return mul(b,.8);return mul(b,.97+R()*.04);};
+  tile(T_('jouetRouge'),toy('#e8342a'));tile(T_('jouetBleu'),toy('#2a6ae8'));tile(T_('jouetJaune'),toy('#f5c81a'));tile(T_('jouetVert'),toy('#3ab84a'));
+  tile(T_('fougere'),(x,y)=>{const on=Math.abs(x-7.5)<1||(Math.abs((x-7.5))<(y%5)+1.5&&y%5<3);if(!on&&R()<.7)return[0,0,0,0];return[...mul(hex('#4aa83a'),.7+R()*.4),255];});
   tile(T_('verreDome'),(x,y)=>{if(x===0||y===0)return[120,190,150,255];if(Math.abs(x-y-3)<1.1)return[245,255,250,110];return[150,235,190,48];});
   tile(T_('coeurEtoile'),(x,y)=>{const dx=Math.abs(x-7.5),dy=Math.abs(y-7.5);if(dx+dy<3.5||(dx<1&&dy<6)||(dy<1&&dx<6))return mix(hex('#ffffff'),hex('#fff2a0'),(dx+dy)/6);return mul(hex('#e86a1a'),.75+R()*.3);});
   g.putImageData(img,0,0);
@@ -924,6 +946,33 @@ KINDS.oubliee={label:'Planète oubliée',imag:true,g:.5,sky:'#8ad0a0',cloud:'#ea
   desc:'Une planète que tout le monde a oubliée, enveloppée par un immense dôme de verre. Dessous pousse une jungle luxuriante, si épaisse qu’on s’y perd très vite… Et il y a des tigres, des singes et des perroquets ! Autour du dôme, un désert de cailloux gris.'};
 KINDS.soleil={label:'Intérieur d’étoile',g:.5,sky:'#ffb050',cloud:null,light:'#fff0c8',top:'plasmaSolide',sub:'plasmaSolide',stone:'plasmaSolide',hb:0,ha:0,hf:.03,trees:[],res:['plasmaSolide','coeurEtoile'],
   desc:'L’intérieur brûlant d’une étoile : un océan de plasma et des îles de plasma figé. Les cœurs d’étoile brillent dans les îles : il en faut pour créer des systèmes solaires et des galaxies.'};
+// version 21 : de nouvelles sortes de planètes (fauna : les animaux qui y vivent)
+Object.assign(KINDS,{
+  dino:{label:'Planète des dinosaures',g:.5,sky:'#a8d8a0',cloud:'#ffffff',top:'herbe',sub:'terre',stone:'roche',beach:'sableDore',liquid:'eau',sea:11,hb:13,ha:13,hf:.03,nests:8,
+    trees:[['fougere',.01],['palmier',.004],['geant',.0012]],res:['fougere','oeufDino','bois','os'],fauna:[['diplo',2],['tricera',3],['ptero',2],['trex',1]],
+    desc:'Une planète restée au temps des dinosaures : des fougères géantes, des nids pleins d’œufs, des diplodocus, des tricératops et des ptérodactyles. Attention au T-rex !'},
+  banquise:{label:'Planète banquise',g:.4,sky:'#d8ecff',cloud:'#ffffff',top:'neige',sub:'glace',stone:'roche',beach:'neige',liquid:'eau',sea:15,hb:13,ha:7,hf:.035,igloos:7,iceHoles:16,
+    trees:[['pic',.002]],res:['neige','glace','cristal'],fauna:[['pingouin',1]],
+    desc:'Une mer gelée à perte de vue, des igloos et des trous dans la glace. Des pingouins se dandinent partout !'},
+  savane:{label:'Savane',g:.45,sky:'#ffd890',cloud:'#fff4e0',top:'herbeSeche',sub:'terre',stone:'roche',liquid:'eau',sea:10,hb:13,ha:7,hf:.022,
+    trees:[['acacia',.0035],['rocher',.0015]],res:['herbeSeche','bois','terre','or'],fauna:[['girafe',2],['elephant',2],['zebre',2]],
+    desc:'De grandes plaines d’herbe dorée, des acacias tout plats, des girafes, des éléphants et des zèbres.'},
+  automne:{label:'Planète d’automne',g:.42,sky:'#ffc890',cloud:'#fff0e0',top:'herbe',sub:'terre',stone:'roche',liquid:'eau',sea:11,hb:13,ha:11,hf:.03,
+    trees:[['erable',.01],['citrouilles',.0015],['champi',.0008]],res:['feuillesRousses','bois','citrouille','pomme'],fauna:[['renard',2],['herisson',2]],
+    desc:'C’est l’automne pour toujours : des arbres orange et rouges, des citrouilles, des renards et des hérissons.'},
+  cerisier:{label:'Planète des cerisiers',g:.4,sky:'#ffe0f0',cloud:'#ffffff',top:'herbe',sub:'terre',stone:'roche',beach:'sableDore',liquid:'eau',sea:11,hb:13,ha:10,hf:.03,
+    trees:[['cerisier',.007],['fleur',.001]],res:['fleurCerisier','bois','herbe','pomme'],fauna:[['lapin',3]],
+    desc:'Des cerisiers en fleurs partout, des petits lacs et des lapins qui sautillent dans l’herbe.'},
+  marais:{label:'Planète marécage',g:.45,sky:'#a8b890',cloud:'#d8e0c8',top:'herbe',sub:'boue',stone:'roche',beach:'boue',liquid:'eau',sea:13,hb:14,ha:4,hf:.05,
+    trees:[['saule',.008],['fougere',.01]],res:['boue','liane','bois','herbe'],fauna:[['grenouille',3]],
+    desc:'Un grand marécage plein de flaques, de boue et de saules pleureurs. Les grenouilles font des bonds partout !'},
+  jouets:{label:'Planète des jouets',imag:true,g:.38,sky:'#9ad8ff',cloud:'#ffffff',top:'jouetVert',sub:'jouetJaune',stone:'jouetBleu',hb:13,ha:6,hf:.03,
+    trees:[['tourJouet',.004]],res:['jouetRouge','jouetBleu','jouetJaune','jouetVert'],fauna:[['robot',2],['ourson',2]],
+    desc:'Une planète tout en briques de jouet ! Des tours de toutes les couleurs, des robots qui marchent tout seuls et des oursons en peluche.'},
+  gateau:{label:'Planète gâteau',imag:true,g:.32,sky:'#ffe8c8',cloud:'#ffffff',top:'gateau',sub:'chocolat',stone:'chocolat',hb:13,ha:8,hf:.028,
+    trees:[['bougie',.006],['sucette',.003]],res:['gateau','chocolat','guimauve','bonbon'],fauna:[['painEpice',2]],
+    desc:'Une planète en gâteau d’anniversaire : de la crème rose, du chocolat dessous et des bougies géantes allumées. Des bonshommes en pain d’épice s’y promènent !'},
+});
 const PLANETS=[];
 (function buildGalaxy(){
   const R=mulberry32(2026);
@@ -980,6 +1029,8 @@ const GALAXIES=[{name:'Voie Lactée',desc:'Ta galaxie : le Système de Balis, le
 const SYSTEMS=[];
 const AIRK=new Set(['jardin','glace','desert','ocean','alien','bonbon','champi','nuage','gelee','arcenciel','ruines','jungle','fleurs']);
 const SNOWABLE=new Set(['jardin','ocean','alien','champi','rouge','desert','jungle','ruines','fleurs']);
+for(const k of ['dino','banquise','savane','automne','cerisier','marais','jouets','gateau'])AIRK.add(k);
+for(const k of ['dino','savane','automne','cerisier','marais'])SNOWABLE.add(k);
 const tempBand=t=>t>.7?'Brûlant':t>.3?'Chaud':t>-.3?'Tempéré':t>-.6?'Froid':'Glacial';
 function orbitFlux(lum,orbit){return lum/Math.pow(orbit*.8,2);}
 function fluxTemp(f){return Math.max(-1,Math.min(1,Math.log2(f/.5)*.32));}
@@ -1123,6 +1174,34 @@ const OUBL=(function addOubliee(){
     if(p.bio===3)p.desc+=' Des extraterrestres très évolués y vivent en grand nombre, avec des vaisseaux capables de coloniser d’autres planètes !';
     else if(p.bio===2)p.desc+=' On dit que des créatures extraterrestres s’y cachent…';
     else if(p.bio===1)p.desc+=' Des molécules extraterrestres flottent près du sol.';}
+})();
+/* --- Version 21 : les nouvelles planètes sont ajoutées dans des systèmes déjà connus, après toutes les anciennes, pour garder leurs numéros --- */
+const NEWP0=PLANETS.length;
+const NEWNAMES={dino:'Dinosauria',banquise:'Pingouinia',savane:'Savanna',automne:'Automnia',cerisier:'Sakurana',marais:'Marécagia',jouets:'Joujoutopia',gateau:'Gâteaulia'};
+const DINO=(function addNewWorlds(){
+  const R=mulberry32(2121),pick=a=>a[R()*a.length|0];
+  const sh=(hexc,dh,ds,dl)=>{const c=new THREE.Color(hexc),h={};c.getHSL(h);c.setHSL((h.h+dh+1)%1,Math.max(0,Math.min(1,h.s+ds)),Math.max(.05,Math.min(.92,h.l+dl)));return '#'+c.getHexString();};
+  const TEMP={dino:.2,banquise:-.5,savane:.4,automne:-.1,cerisier:0,marais:.1,jouets:0,gateau:0};
+  const used=new Set(PLANETS.map(p=>p.name));
+  const SY0=['pa','lu','zo','mi','ka','ré','to','bi','nou','ga','fi','lo','so','ty','mo','ra'],SY1=['nox','vaël','zhi','mor','kae','sil','rha','dra','nyx','thar','vel','qir'];
+  const nameOf=gal=>{for(;;){const L=gal?SY1:SY0;let n=pick(L)+pick(L)+pick(['a','ia','on','is','ette','ane','ys']);n=n[0].toUpperCase()+n.slice(1);if(!used.has(n)){used.add(n);return n;}}};
+  const add=(kind,s,name,vary)=>{const T=KINDS[kind],st=STARS[s.star];
+    const p=Object.assign({},T,{trees:T.trees.map(t=>t.slice()),i:PLANETS.length,kind,name,gal:s.gal,sys:s.i,parent:-1,moonIds:[],ang:R()*Math.PI*2,
+      orbit:Math.max(0,...s.bodies.map(j=>PLANETS[j].orbit))+1,star:s.star,rogue:false,temp:TEMP[kind],day:4+Math.round(R()*8),bio:0,role:'Planète',nouv:1});
+    if(vary){p.g=Math.round(T.g*(.7+R()*.6)*100)/100;p.hb=T.hb+Math.round((R()-.5)*4);p.ha=T.ha*(.6+R()*.8);p.hf=T.hf*(.75+R()*.5);
+      if(T.sky)p.sky=sh(T.sky,(R()-.5)*.16,(R()-.5)*.2,(R()-.5)*.1);if(T.sea)p.sea=T.sea+Math.round((R()-.5)*4);p.trees=T.trees.map(t=>[t[0],t[1]*(.6+R()*.9)]);}
+    let d=T.desc;if(p.g<.2)d+=' Gravité très faible : sauts de géant !';else if(p.g>.55)d+=' Gravité forte : ta fusée doit forcer.';p.desc=d;
+    p.orbitR=Math.sqrt(st.lum/(.5*Math.pow(2,p.temp/.32)))/.8;p.flux=orbitFlux(st.lum,p.orbitR);
+    p.bright=Math.max(.98,Math.min(1.2,.92+.22*Math.log2(p.flux/.5)));p.air=AIRK.has(kind)&&!!p.sky;
+    p.deco=R()<.45?1:0;p.moonsN=p.deco;p.mapCol=BLOCKS[ID[p.top]].color;
+    PLANETS.push(p);s.bodies.push(p.i);return p;};
+  const kinds=Object.keys(NEWNAMES),hallo=PLANETS[HALLO].sys;
+  const g0=SYSTEMS.filter(s=>s.gal===0&&!s.real&&s.i!==0&&s.i!==hallo),g1=SYSTEMS.filter(s=>s.gal===1);
+  for(let i=g0.length-1;i>0;i--){const j=R()*(i+1)|0;[g0[i],g0[j]]=[g0[j],g0[i]];}
+  // Dinosauria tourne autour de l'étoile de Balis ; les autres planètes nommées ont chacune leur système
+  let dino=-1;kinds.forEach((k,n)=>{const p=add(k,k==='dino'?SYSTEMS[0]:g0[n%g0.length],NEWNAMES[k],false);if(k==='dino')dino=p.i;});
+  for(const k of kinds){add(k,pick(g0),nameOf(0),true);for(let q=0;q<2;q++)add(k,pick(g1),nameOf(1),true);}
+  return dino;
 })();
 let PI_CUR=0,P=PLANETS[0];
 function planetSeed(i,seed){return i===0?seed:(seed^Math.imul(i+1,-1640531535))|0;}
@@ -1268,6 +1347,22 @@ function plant(type,x,y,z,R){
     case 'citrouilles':{for(let n=3+(R()*4|0);n>0;n--){const px=x+(R()*5|0)-2,pz=z+(R()*5|0)-2;let py=y+2;while(py>y-4&&!SOLID[get(px,py-1,pz)])py--;
         if(get(px,py,pz)||!SOLID[get(px,py-1,pz)])continue;putB(px,py,pz,R()<.3?B.lanterne:B.citrouille);}break;}
     case 'tombe':{putB(x,y,z,B.tombe);if(R()<.5)putB(x,y+1,z,B.tombe);if(R()<.3)putB(x,y,z-1,B.os);break;}
+    case 'fougere':{for(const [dx,dz] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]])putB(x+dx,y,z+dz,B.fougere);putB(x,y+1,z,B.fougere);
+      if(R()<.5)for(const [dx,dz] of [[2,0],[-2,0],[0,2],[0,-2]])putB(x+dx,y+1,z+dz,B.fougere);break;}
+    case 'acacia':{const h=4+(R()*3|0);for(let k=0;k<h;k++)putB(x+(k>=h-2?1:0),y+k,z,B.bois);
+      for(let dz=-3;dz<=3;dz++)for(let dx=-3;dx<=3;dx++){const d=Math.hypot(dx,dz);if(d>3.3)continue;putB(x+1+dx,y+h,z+dz,B.feuilles);if(d<1.8)putB(x+1+dx,y+h+1,z+dz,B.feuilles);}break;}
+    case 'erable':{const h=4+(R()*3|0);for(let k=0;k<h;k++)putB(x,y+k,z,B.bois);
+      for(let dy=-2;dy<=1;dy++){const r=dy>0?1:2;for(let dz=-r;dz<=r;dz++)for(let dx=-r;dx<=r;dx++){if(Math.abs(dx)===r&&Math.abs(dz)===r&&R()<.6)continue;putB(x+dx,y+h+dy,z+dz,R()<.03?B.pomme:B.feuillesRousses);}}
+      for(let n=0;n<4;n++){const fx=x+(R()*7|0)-3,fz=z+(R()*7|0)-3;let fy=y+1;while(fy>y-4&&!SOLID[get(fx,fy-1,fz)])fy--;if(!get(fx,fy,fz)&&SOLID[get(fx,fy-1,fz)])putB(fx,fy,fz,B.feuillesRousses);}break;}
+    case 'cerisier':{const h=3+(R()*3|0);for(let k=0;k<h;k++)putB(x,y+k,z,B.bois);
+      for(let dy=-1;dy<=2;dy++){const r=dy===2?1.2:dy===-1?2.2:3.2;for(let dz=-3;dz<=3;dz++)for(let dx=-3;dx<=3;dx++){if(Math.hypot(dx,dz)>r||R()<.1)continue;putB(x+dx,y+h+dy,z+dz,B.fleurCerisier);}}break;}
+    case 'saule':{const h=5+(R()*3|0);for(let k=0;k<h;k++)putB(x,y+k,z,B.bois);
+      for(let dy=0;dy<=1;dy++)for(let dz=-3;dz<=3;dz++)for(let dx=-3;dx<=3;dx++){const d=Math.hypot(dx,dz);if(d>3.3-dy)continue;putB(x+dx,y+h+dy,z+dz,B.feuilles);
+        if(dy===0&&d>2.2&&R()<.7)for(let k=1;k<=2+(R()*3|0);k++)putB(x+dx,y+h-k,z+dz,B.liane);}break;}
+    case 'tourJouet':{const C=[B.jouetRouge,B.jouetBleu,B.jouetJaune,B.jouetVert],h=3+(R()*8|0),w=R()<.4?1:0;let c=R()*4|0;
+      for(let k=0;k<h;k++){if(k%2===0)c=(c+1+(R()*3|0))%4;for(let dz=-w;dz<=w;dz++)for(let dx=-w;dx<=w;dx++)putB(x+dx,y+k,z+dz,C[c]);}
+      if(R()<.35){const c2=C[R()*4|0];for(let k=0;k<3;k++){putB(x+3,y+k,z,c2);}for(let dx=0;dx<=3;dx++)putB(x+dx,y+3,z,C[(c+2)%4]);}break;}
+    case 'bougie':{const h=4+(R()*5|0),c=[B.bonbon,B.guimauve,B.gelee,B.arcEnCiel][R()*4|0];for(let k=0;k<h;k++)putB(x,y+k,z,c);putB(x,y+h,z,B.pollen);break;}
     case 'rocher':{const r=1+R()*1.3;for(let dy=-1;dy<=2;dy++)for(let dz=-2;dz<=2;dz++)for(let dx=-2;dx<=2;dx++)if(Math.hypot(dx,dy,dz)<=r)putB(x+dx,y+dy,z+dz,ID[P.stone]===ID.fromage?ID.fromage:B.roche);break;}
   }
 }
@@ -1330,6 +1425,19 @@ function genPlanet(Pl,R){
       putB(cx,t+1,cz,ID.coffre,true);}
     else{const n=3+(R()*3|0),ax=R()<.5;for(let k=0;k<n;k++){const x=cx+(ax?k*2:0),z=cz+(ax?0:k*2),tt=Math.floor(hm[Math.min(W-1,x)+Math.min(D-1,z)*W]),h=1+(R()*5|0);for(let y=1;y<=h;y++)putB(x,tt+y,z,PA);}}
     if(R()<.5){const bx=cx+5,bz=cz+2,bt=Math.floor(hm[Math.min(W-1,bx)+Math.min(D-1,bz)*W]);putB(bx,bt-2,bz,ID.coffre,true);}}
+  // nids de dinosaures pleins d'œufs
+  for(let i=0;i<(Pl.nests||0);i++){const cx=8+(R()*(W-16)|0),cz=8+(R()*(D-16)|0);if(nearPad(cx,cz,16))continue;const t=Math.floor(hm[cx+cz*W]);if(liq&&t<=sea)continue;
+    for(let dz=-2;dz<=2;dz++)for(let dx=-2;dx<=2;dx++){const d=Math.hypot(dx,dz);if(d>2.5)continue;const tt=Math.floor(hm[(cx+dx)+(cz+dz)*W]);
+      if(d>1.5)putB(cx+dx,tt+1,cz+dz,ID.bois,true);else{putB(cx+dx,tt,cz+dz,ID.herbeSeche,true);putB(cx+dx,tt+1,cz+dz,R()<.6?ID.oeufDino:0,true);}}}
+  // trous dans la banquise, puis des igloos (avec un coffre caché dedans)
+  if(Pl.iceHoles&&liq===ID.glace)for(let i=0;i<Pl.iceHoles;i++){const cx=8+R()*(W-16),cz=8+R()*(D-16),r=2+R()*4;if(nearPad(cx,cz,14+r))continue;
+    for(let z=Math.floor(cz-r);z<=cz+r;z++)for(let x=Math.floor(cx-r);x<=cx+r;x++){if(x<0||z<0||x>=W||z>=D||Math.hypot(x+.5-cx,z+.5-cz)>r)continue;
+      const t=Math.floor(hm[x+z*W]);if(t>=sea-1)continue;for(let y=Math.max(t+1,sea-3);y<=sea;y++)if(get(x,y,z)===ID.glace)world[idx(x,y,z)]=ID.eau;}}
+  for(let i=0;i<(Pl.igloos||0);i++){const cx=10+(R()*(W-20)|0),cz=10+(R()*(D-20)|0);if(nearPad(cx,cz,18))continue;
+    const g=Math.max(Math.floor(hm[cx+cz*W]),sea);if(get(cx,g,cz)===ID.eau)continue;
+    for(let dy=0;dy<=4;dy++)for(let dz=-4;dz<=4;dz++)for(let dx=-4;dx<=4;dx++){const d=Math.hypot(dx,dy*1.05,dz);if(d>4)continue;putB(cx+dx,g+1+dy,cz+dz,d>2.9?ID.neige:0,true);}
+    for(let dz=-5;dz<=-2;dz++)for(let dy=1;dy<=2;dy++)putB(cx,g+dy,cz+dz,0,true);
+    putB(cx,g+1,cz+2,ID.coffre,true);putB(cx+2,g+1,cz,ID.pollen,true);}
   // planète Halloween : lanternes autour de l'aire, cimetières et maisons hantées
   const msZone=(cx,cz)=>cx>BASE.x+6&&cx<BASE.x+54&&Math.abs(cz-BASE.z)<18;
   if(Pl.halloween)for(const [dx,dz] of [[-8,-8],[8,-8],[-8,8],[8,8]])putB(BASE.x+dx,padH+1,BASE.z+dz,ID.lanterne,true);
@@ -1690,6 +1798,10 @@ function newGame(mode){
   S=freshState(seed,mode||'survie');rebuildMade();enterPlanet(0);rebuildPets();spawnHome();parkShip();inShip=false;markAll(pos.x,pos.y,pos.z);
 }
 function loadGame(d){
+  // version 4 : les nouvelles planètes passent avant l'intérieur d'étoile et les planètes créées, dont les numéros augmentent
+  if((d.v||1)<4){const N=SUNP-NEWP0,mv=o=>{if(!o)return o;const r={};for(const k in o){const n=+k;r[n>=NEWP0?n+N:n]=o[k];}return r;};
+    d.pedits=mv(d.pedits);d.visited=mv(d.visited);d.colonies=mv(d.colonies);d.beaten=mv(d.beaten);if((d.planet|0)>=NEWP0)d.planet=(d.planet|0)+N;
+    for(const k in d.colonies||{}){const c=d.colonies[k];if(c&&c.from>=NEWP0)c.from+=N;}}
   const f=freshState(d.seed,d.mode);
   S=Object.assign(f,{inv:d.inv||f.inv,hotbar:d.hotbar||f.hotbar,sel:d.sel||0,stats:Object.assign(f.stats,d.stats||{}),tier:d.tier||1,jet:d.jet||1,eng:d.eng||1,
     fuel:typeof d.fuel==='number'?d.fuel:60,fuelMax:d.fuelMax||100,done:d.done||{},hyp:d.hyp||1,visited:d.visited||{0:1},pedits:d.pedits||{},sv:d.sv||{hp:100,o2:100,food:100},o2max:d.o2max||100,suit:!!d.suit,inter:!!d.inter,
@@ -1713,7 +1825,7 @@ function readSave(){try{const t=localStorage.getItem(SAVE_KEY);return t?JSON.par
 function save(silent){
   if(!S)return;
   try{S.pedits[PI_CUR]=planetEditsArray();
-    localStorage.setItem(SAVE_KEY,JSON.stringify({v:3,seed:S.seed,mode:S.mode,inv:S.inv,hotbar:S.hotbar,sel:S.sel,stats:S.stats,tier:S.tier,jet:S.jet,eng:S.eng,hyp:S.hyp,sv:S.sv,o2max:S.o2max,suit:S.suit,inter:S.inter,laser:S.laser,armor:S.armor,ms:S.ms,colonies:S.colonies,beaten:S.beaten,alienT:S.alienT,th:S.th,met:S.met,made:S.made,pets:S.pets,sunShield:S.sunShield,relat:S.relat,grav:S.grav,sunSys:S.sunSys,oubl:1,npcT:S.npcT,cal:S.cal,job:S.job,req:S.req,helped:S.helped,fuel:S.fuel,fuelMax:S.fuelMax,done:S.done,
+    localStorage.setItem(SAVE_KEY,JSON.stringify({v:4,seed:S.seed,mode:S.mode,inv:S.inv,hotbar:S.hotbar,sel:S.sel,stats:S.stats,tier:S.tier,jet:S.jet,eng:S.eng,hyp:S.hyp,sv:S.sv,o2max:S.o2max,suit:S.suit,inter:S.inter,laser:S.laser,armor:S.armor,ms:S.ms,colonies:S.colonies,beaten:S.beaten,alienT:S.alienT,th:S.th,met:S.met,made:S.made,pets:S.pets,sunShield:S.sunShield,relat:S.relat,grav:S.grav,sunSys:S.sunSys,oubl:1,npcT:S.npcT,cal:S.cal,job:S.job,req:S.req,helped:S.helped,fuel:S.fuel,fuelMax:S.fuelMax,done:S.done,
       pos:[pos.x,pos.y,pos.z],yaw,pitch,ship:[sh.x,sh.y,sh.z,sh.yaw],inShip,cam:camMode,planet:PI_CUR,visited:S.visited,pedits:S.pedits}));
     if(!silent)toast('Partie sauvegardée dans ce navigateur.',2200,true);
   }catch(err){if(!silent)toast('Sauvegarde impossible : ce navigateur bloque le stockage local.');}
@@ -2135,7 +2247,8 @@ function renderMapInfo(){
       (()=>{const cols=activeColonies().filter(j=>PLANETS[j].gal===mapGal),cv=civs().filter(p=>p.gal===mapGal);
         return (cols.length?'<div class="pi-list"><div class="cat-label">Planètes colonisées par les extraterrestres</div>'+cols.map(bodyBtn).join('')+'</div>':'')+
           (cv.length?'<div class="pi-list"><div class="cat-label">Planètes extra-bio (extraterrestres évolués)</div>'+cv.map(p=>bodyBtn(p.i)).join('')+'</div>':'');})()+
-      (mapGal===0?'<div class="pi-list"><div class="cat-label">Raccourcis</div>'+bodyBtn(HALLO)+bodyBtn(OUBL)+'<button type="button" class="pbtn" data-s="'+SYSTEMS.findIndex(s=>s.real)+'"><i style="background:#fff1c8"></i>Système solaire (Terre, Jupiter…)</button><button type="button" class="pbtn" data-s="0"><i style="background:#ffc890"></i>Système de Balis</button></div>':'');
+      (mapGal===0?'<div class="pi-list"><div class="cat-label">Nouvelles planètes</div>'+PLANETS.filter(p=>p.nouv&&NEWNAMES[p.kind]===p.name).map(p=>bodyBtn(p.i)).join('')+'</div>'+
+        '<div class="pi-list"><div class="cat-label">Raccourcis</div>'+bodyBtn(HALLO)+bodyBtn(OUBL)+'<button type="button" class="pbtn" data-s="'+SYSTEMS.findIndex(s=>s.real)+'"><i style="background:#fff1c8"></i>Système solaire (Terre, Jupiter…)</button><button type="button" class="pbtn" data-s="0"><i style="background:#ffc890"></i>Système de Balis</button></div>':'');
   }
   el.innerHTML=html;
   el.querySelectorAll('.pbtn').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.s!==undefined){openSystem(+b.dataset.s);return;}const j=+b.dataset.j;const p=PLANETS[j];if(p.sys>=0)mapSys=p.sys;selectPlanet(j);}));
@@ -2517,6 +2630,21 @@ const MOBT={
   tigre:{name:'Tigre',hp:8,sp:4.8,aggro:13,dmg:8,w:.9,h:1.05,drop:[['os',1]],col:'#f08a24',grp:'j'},
   singe:{name:'Singe',hp:3,sp:3.4,hop:1,passive:1,calm:1,w:.6,h:.95,drop:[],col:'#7a4a2a',grp:'j'},
   perroquet:{name:'Perroquet',hp:2,sp:4,fly:1,bat:1,passive:1,calm:1,w:.45,h:.6,drop:[],col:'#e8302a',grp:'j'},
+  diplo:{name:'Diplodocus',hp:20,sp:2,passive:1,calm:1,w:1.4,h:2.6,drop:[],col:'#7ab86a',grp:'f'},
+  tricera:{name:'Tricératops',hp:12,sp:2.6,passive:1,calm:1,w:1.1,h:1.3,drop:[],col:'#d88a4a',grp:'f'},
+  ptero:{name:'Ptérodactyle',hp:3,sp:4.5,fly:1,bat:1,passive:1,calm:1,w:.9,h:.5,drop:[],col:'#a86a5a',grp:'f'},
+  trex:{name:'T-rex',hp:14,sp:4.2,aggro:12,roar:1,dmg:9,w:1.1,h:2.2,drop:[['os',2],['oeufDino',1]],col:'#4a8a3a',grp:'f'},
+  pingouin:{name:'Pingouin',hp:3,sp:2,passive:1,calm:1,waddle:1,w:.5,h:.95,drop:[],col:'#26262e',grp:'f'},
+  girafe:{name:'Girafe',f:1,hp:10,sp:3,passive:1,calm:1,w:.9,h:3.2,drop:[],col:'#f0c040',grp:'f'},
+  elephant:{name:'Éléphant',hp:16,sp:2.2,passive:1,calm:1,w:1.5,h:1.9,drop:[],col:'#9a9aa4',grp:'f'},
+  zebre:{name:'Zèbre',hp:6,sp:4,passive:1,calm:1,w:.8,h:1.6,drop:[],col:'#f4f4f4',grp:'f'},
+  renard:{name:'Renard',hp:4,sp:4,passive:1,calm:1,w:.6,h:.8,drop:[],col:'#e8782a',grp:'f'},
+  herisson:{name:'Hérisson',hp:3,sp:1.6,passive:1,calm:1,w:.5,h:.45,drop:[],col:'#6a4a2a',grp:'f'},
+  lapin:{name:'Lapin',hp:2,sp:3.6,hop:1,passive:1,calm:1,w:.45,h:.8,drop:[],col:'#f4eee8',grp:'f'},
+  grenouille:{name:'Grenouille',f:1,hp:2,sp:3.4,hop:1,passive:1,calm:1,w:.45,h:.4,drop:[],col:'#4ac04a',grp:'f'},
+  robot:{name:'Robot jouet',hp:5,sp:2,passive:1,calm:1,w:.6,h:1.4,drop:[],col:'#c8d0d8',grp:'f'},
+  ourson:{name:'Ourson en peluche',hp:5,sp:2,passive:1,calm:1,w:.6,h:1.15,drop:[],col:'#b07a4a',grp:'f'},
+  painEpice:{name:'Bonhomme en pain d’épice',hp:4,sp:2.6,passive:1,calm:1,w:.6,h:1.15,drop:[],col:'#c07a3a',grp:'f'},
   molecule:{name:'Molécule extraterrestre',f:1,hp:1,fly:1,mol:1,passive:1,w:.7,h:.8,drop:[['molecule',1]],col:'#7dffb0',grp:'m'},
 };
 const ML=c=>new THREE.MeshLambertMaterial({color:c}),MBc=c=>new THREE.MeshBasicMaterial({color:c});
@@ -2524,6 +2652,9 @@ const MOBM={ghost:new THREE.MeshBasicMaterial({color:0xe8f0ff,transparent:true,o
   bone:ML(0xe8e0c8),boneD:ML(0x9a9280),bat:ML(0x2a2030),red:MBc(0xff3030),dress:ML(0x5a2a7a),skin:ML(0x6ac04a),hat:ML(0x1c1424),broom:ML(0x7b5530),straw:ML(0xd8b860),
   aSkin:ML(0x8ad0a8),armor:ML(0x2a5a6a),glowG:MBc(0x7dff6a),metal:ML(0xb8c4d0),metalD:ML(0x56606c),dome:new THREE.MeshLambertMaterial({color:0x8ff0ff,transparent:true,opacity:.5,depthWrite:false}),
   crawl:ML(0x6a4a8a),crawlB:ML(0x4a8a5a),eyeY:MBc(0xfff04a),molA:MBc(0x7dffb0),molB:MBc(0x63c8ff),molC:MBc(0xff7ad8),stick:MBc(0xd8fff0),potion:MBc(0xb05aff),laser:MBc(0x7dff6a),white:MBc(0xffffff),grey:ML(0x8a8478),greyD:ML(0x5a564e),yellow:ML(0xf2d23a),yellowD:ML(0xc8a828),party:ML(0xff4fa0),party2:MBc(0xffe14d),hurl:ML(0x3a1a1a)};
+Object.assign(MOBM,{dino:ML(0x7ab86a),dinoD:ML(0x5a9a4a),trex:ML(0x4a8a3a),tri:ML(0xd88a4a),triD:ML(0xb86a30),horn:ML(0xf4ecd8),ptero:ML(0xa86a5a),pteroD:ML(0x7a4a3a),
+  blk:ML(0x26262e),wht:ML(0xf4f4f4),gir:ML(0xf0c040),girS:ML(0xa8602a),ele:ML(0x9a9aa4),eleD:ML(0x7a7a84),fox:ML(0xe8782a),hed:ML(0x6a4a2a),hedD:ML(0x4a3220),hedF:ML(0xe0c8a0),
+  bun:ML(0xf4eee8),pinkL:ML(0xffa8c0),frog:ML(0x4ac04a),frogL:ML(0xc8f0a0),rob:ML(0xc8d0d8),robR:ML(0xe8342a),robB:ML(0x2a6ae8),ted:ML(0xb07a4a),gin:ML(0xc07a3a)});
 Object.assign(MOBM,{tiger:ML(0xf08a24),cream:ML(0xfff2dc),brown:ML(0x7a4a2a),tan:ML(0xe0b890),parrot:ML(0xe8302a),parrotB:ML(0x2a7ae8),beak:ML(0xffc83a)});
 const BGEO=new Map();function bgeo(w,h,d){const k=w+'|'+h+'|'+d;let g=BGEO.get(k);if(!g){g=new THREE.BoxGeometry(w,h,d);BGEO.set(k,g);}return g;}
 function bx(par,w,h,d,mat,x,y,z){const m=new THREE.Mesh(bgeo(w,h,d),mat);m.position.set(x,y,z);par.add(m);return m;}
@@ -2574,6 +2705,67 @@ function makeMob(type){
     case 'perroquet':bx(b,.26,.3,.36,M.parrot,0,.26,0);bx(b,.22,.22,.22,M.parrot,0,.5,-.13);bx(b,.08,.1,.1,M.beak,0,.46,-.28);
       for(const s of [-1,1])bx(b,.05,.05,.03,M.ink,s*.08,.54,-.24);bx(b,.12,.04,.34,M.parrotB,0,.18,.32);
       a.wl=grp(b,-.13,.3,0);bx(a.wl,.4,.04,.26,M.parrotB,-.2,0,0);a.wr=grp(b,.13,.3,0);bx(a.wr,.4,.04,.26,M.parrotB,.2,0,0);break;
+    case 'diplo':a.legs=[];for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const l=grp(b,sx*.38,1.05,sz*.6);bx(l,.32,1.05,.32,M.dinoD,0,-0.525,0);a.legs.push(l);}
+      bx(b,1.1,.95,1.9,M.dino,0,1.45,0);bx(b,.9,.2,1.6,M.dinoD,0,1.98,0);
+      a.neck=grp(b,0,1.7,-.85);for(let k=0;k<5;k++)bx(a.neck,.34,.34,.34,M.dino,0,.1+k*.3,-.12-k*.17);
+      bx(a.neck,.46,.36,.62,M.dino,0,1.62,-1.05);for(const s of [-1,1])bx(a.neck,.06,.08,.08,M.ink,s*.24,1.7,-1.2);
+      a.tail=grp(b,0,1.45,.9);for(let k=0;k<5;k++){const w=.42-k*.06;bx(a.tail,w,w,.4,M.dino,0,-k*.07,.2+k*.36);}break;
+    case 'tricera':a.legs=[];for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const l=grp(b,sx*.33,0.5,sz*.5);bx(l,.24,0.5,.24,M.triD,0,-0.25,0);a.legs.push(l);}
+      bx(b,.9,.75,1.5,M.tri,0,.85,0);bx(b,1.15,.85,.12,M.triD,0,1.15,-.78);bx(b,.66,.55,.6,M.tri,0,.85,-1.05);
+      for(const s of [-1,1]){bx(b,.09,.09,.5,M.horn,s*.2,1.12,-1.45);bx(b,.07,.08,.04,M.ink,s*.2,.98,-1.36);}
+      bx(b,.08,.14,.2,M.horn,0,.82,-1.42);a.tail=grp(b,0,.85,.75);bx(a.tail,.3,.28,.7,M.tri,0,0,.35);break;
+    case 'ptero':bx(b,.3,.26,.6,M.ptero,0,.25,0);bx(b,.26,.26,.3,M.ptero,0,.36,-.38);bx(b,.1,.08,.4,M.beak,0,.32,-.7);bx(b,.08,.2,.3,M.pteroD,0,.55,-.28);
+      for(const s of [-1,1])bx(b,.05,.05,.03,M.ink,s*.1,.42,-.53);
+      a.wl=grp(b,-.15,.3,-.05);bx(a.wl,.9,.04,.42,M.pteroD,-.45,0,0);a.wr=grp(b,.15,.3,-.05);bx(a.wr,.9,.04,.42,M.pteroD,.45,0,0);break;
+    case 'trex':a.ll=grp(b,-.3,1,.1);bx(a.ll,.3,1,.38,M.trex,0,-.5,0);a.lr=grp(b,.3,1,.1);bx(a.lr,.3,1,.38,M.trex,0,-.5,0);
+      bx(b,.85,.9,1.3,M.trex,0,1.45,0);bx(b,.6,.5,.9,M.cream,0,1.3,-.25);
+      bx(b,.7,.62,.95,M.trex,0,2.05,-.95);bx(b,.62,.08,.6,M.wht,0,1.78,-1.15);
+      for(const s of [-1,1]){bx(b,.12,.14,.04,M.white,s*.2,2.2,-1.43);bx(b,.06,.07,.03,M.ink,s*.2,2.19,-1.46);bx(b,.08,.08,.3,M.trex,s*.36,1.4,-.75);}
+      a.tail=grp(b,0,1.45,.6);for(let k=0;k<4;k++){const w=.6-k*.12;bx(a.tail,w,w,.45,M.trex,0,-k*.12,.22+k*.42);}break;
+    case 'pingouin':bx(b,.44,.62,.38,M.blk,0,.42,0);bx(b,.32,.48,.04,M.wht,0,.38,-.2);bx(b,.36,.3,.34,M.blk,0,.86,0);bx(b,.24,.14,.04,M.wht,0,.86,-.18);
+      for(const s of [-1,1]){bx(b,.05,.05,.03,M.ink,s*.08,.9,-.205);bx(b,.14,.06,.2,M.beak,s*.1,.03,-.08);}bx(b,.1,.06,.14,M.beak,0,.8,-.24);
+      a.wl=grp(b,-.24,.6,0);bx(a.wl,.06,.36,.2,M.blk,0,-.18,0);a.wr=grp(b,.24,.6,0);bx(a.wr,.06,.36,.2,M.blk,0,-.18,0);break;
+    case 'girafe':a.legs=[];for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const l=grp(b,sx*.22,1.25,sz*.38);bx(l,.16,1.25,.16,M.gir,0,-0.625,0);a.legs.push(l);}
+      bx(b,.56,.55,1.05,M.gir,0,1.5,0);for(const [x,y,z] of [[.29,1.55,-.25],[-.29,1.45,.2],[.29,1.4,.3],[-.29,1.6,-.3],[0,1.78,0]])bx(b,x?.02:.3,.16,.18,M.girS,x,y,z);
+      a.neck=grp(b,0,1.7,-.42);bx(a.neck,.24,1.3,.24,M.gir,0,.65,0);bx(a.neck,.26,.18,.18,M.girS,0,.5,0);bx(a.neck,.26,.16,.16,M.girS,0,1.0,.02);
+      bx(a.neck,.3,.3,.56,M.gir,0,1.38,-.16);for(const s of [-1,1]){bx(a.neck,.06,.16,.06,M.girS,s*.08,1.6,-.05);bx(a.neck,.05,.06,.03,M.ink,s*.16,1.42,-.3);}
+      a.tail=grp(b,0,1.6,.53);bx(a.tail,.05,.05,.5,M.gir,0,-.15,.2);break;
+    case 'elephant':a.legs=[];for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const l=grp(b,sx*.38,0.8,sz*.52);bx(l,.34,0.8,.34,M.ele,0,-0.4,0);a.legs.push(l);}
+      bx(b,1.15,.95,1.55,M.ele,0,1.25,0);bx(b,.78,.75,.6,M.ele,0,1.45,-1.0);
+      for(const s of [-1,1]){bx(b,.08,.72,.6,M.eleD,s*.46,1.5,-.85);bx(b,.07,.07,.03,M.ink,s*.22,1.58,-1.31);bx(b,.07,.07,.3,M.wht,s*.2,1.08,-1.38);}
+      a.neck=grp(b,0,1.25,-1.35);for(let k=0;k<3;k++)bx(a.neck,.22-k*.02,.32,.22-k*.02,M.ele,0,-k*.3,-k*.06);
+      a.tail=grp(b,0,1.4,.78);bx(a.tail,.06,.4,.06,M.eleD,0,-.2,.04);break;
+    case 'zebre':a.legs=[];for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const l=grp(b,sx*.18,.72,sz*.4);bx(l,.13,.72,.13,M.wht,0,-.36,0);bx(l,.14,.08,.14,M.blk,0,-.68,0);a.legs.push(l);}
+      bx(b,.5,.48,1.05,M.wht,0,.98,0);for(const z of [-.38,-.13,.12,.37])bx(b,.52,.5,.07,M.blk,0,.98,z);
+      a.neck=grp(b,0,1.1,-.45);bx(a.neck,.22,.55,.26,M.wht,0,.25,-.05);bx(a.neck,.06,.6,.3,M.blk,0,.3,.04);bx(a.neck,.24,.24,.5,M.wht,0,.55,-.3);bx(a.neck,.25,.1,.1,M.blk,0,.5,-.52);
+      for(const s of [-1,1]){bx(a.neck,.05,.05,.03,M.ink,s*.1,.62,-.4);bx(a.neck,.06,.12,.05,M.wht,s*.08,.74,-.12);}
+      a.tail=grp(b,0,1.1,.52);bx(a.tail,.05,.4,.05,M.blk,0,-.2,.03);break;
+    case 'renard':a.legs=[];for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const l=grp(b,sx*.12,0.3,sz*.24);bx(l,.09,0.3,.09,M.blk,0,-0.15,0);a.legs.push(l);}
+      bx(b,.34,.3,.66,M.fox,0,.44,0);bx(b,.26,.12,.5,M.wht,0,.32,0);bx(b,.32,.28,.28,M.fox,0,.6,-.42);bx(b,.16,.12,.16,M.wht,0,.53,-.62);bx(b,.06,.06,.04,M.ink,0,.56,-.71);
+      for(const s of [-1,1]){bx(b,.05,.05,.03,M.ink,s*.08,.66,-.565);bx(b,.09,.13,.06,M.fox,s*.1,.8,-.4);}
+      a.tail=grp(b,0,.48,.33);bx(a.tail,.18,.18,.46,M.fox,0,.02,.23);bx(a.tail,.19,.19,.12,M.wht,0,.02,.48);break;
+    case 'herisson':a.legs=[];for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const l=grp(b,sx*.13,0.1,sz*.15);bx(l,.08,0.1,.08,M.hedF,0,-0.05,0);a.legs.push(l);}
+      bx(b,.42,.28,.5,M.hed,0,.24,.02);for(const [x,z] of [[-.12,-.1],[.12,-.1],[0,.05],[-.12,.2],[.12,.2]])bx(b,.12,.12,.12,M.hedD,x,.4,z);
+      bx(b,.22,.18,.16,M.hedF,0,.18,-.28);bx(b,.06,.06,.04,M.ink,0,.17,-.38);for(const s of [-1,1])bx(b,.04,.04,.03,M.ink,s*.06,.23,-.365);break;
+    case 'lapin':bx(b,.3,.28,.4,M.bun,0,.18,.03);bx(b,.26,.25,.25,M.bun,0,.4,-.16);
+      for(const s of [-1,1]){bx(b,.07,.3,.06,M.bun,s*.07,.66,-.12);bx(b,.04,.22,.02,M.pinkL,s*.07,.66,-.155);bx(b,.05,.05,.03,M.ink,s*.08,.44,-.29);}
+      bx(b,.05,.04,.03,M.pinkL,0,.37,-.295);bx(b,.12,.12,.1,M.wht,0,.22,.27);break;
+    case 'grenouille':bx(b,.4,.2,.42,M.frog,0,.12,0);bx(b,.3,.04,.32,M.frogL,0,.03,-.02);
+      for(const s of [-1,1]){bx(b,.13,.13,.13,M.wht,s*.11,.27,-.13);bx(b,.06,.07,.03,M.ink,s*.11,.27,-.2);bx(b,.12,.1,.24,M.frog,s*.2,.06,.12);}
+      bx(b,.24,.03,.03,M.ink,0,.1,-.215);break;
+    case 'robot':a.ll=grp(b,-.11,.4,0);bx(a.ll,.14,.4,.16,M.rob,0,-.2,0);a.lr=grp(b,.11,.4,0);bx(a.lr,.14,.4,.16,M.rob,0,-.2,0);
+      bx(b,.46,.42,.3,M.robB,0,.62,0);bx(b,.14,.1,.03,M.red,0,.68,-.16);
+      a.al=grp(b,-.29,.8,0);bx(a.al,.1,.36,.1,M.rob,0,-.17,0);a.ar=grp(b,.29,.8,0);bx(a.ar,.1,.36,.1,M.rob,0,-.17,0);
+      bx(b,.36,.3,.3,M.rob,0,1.0,0);for(const s of [-1,1])bx(b,.08,.06,.03,M.glowG,s*.08,1.02,-.16);bx(b,.03,.16,.03,M.rob,0,1.23,0);bx(b,.08,.08,.08,M.robR,0,1.33,0);break;
+    case 'ourson':a.ll=grp(b,-.11,.26,0);bx(a.ll,.17,.26,.18,M.ted,0,-.13,0);a.lr=grp(b,.11,.26,0);bx(a.lr,.17,.26,.18,M.ted,0,-.13,0);
+      bx(b,.44,.42,.34,M.ted,0,.46,0);bx(b,.28,.28,.03,M.tan,0,.44,-.17);
+      a.al=grp(b,-.27,.6,0);bx(a.al,.13,.3,.13,M.ted,0,-.14,0);a.ar=grp(b,.27,.6,0);bx(a.ar,.13,.3,.13,M.ted,0,-.14,0);
+      bx(b,.4,.36,.34,M.ted,0,.84,0);bx(b,.18,.12,.06,M.tan,0,.79,-.19);bx(b,.06,.05,.03,M.ink,0,.82,-.225);
+      for(const s of [-1,1]){bx(b,.05,.05,.03,M.ink,s*.09,.9,-.175);bx(b,.12,.12,.08,M.ted,s*.16,1.05,0);}break;
+    case 'painEpice':a.ll=grp(b,-.11,.36,0);bx(a.ll,.16,.36,.14,M.gin,0,-.18,0);a.lr=grp(b,.11,.36,0);bx(a.lr,.16,.36,.14,M.gin,0,-.18,0);
+      bx(b,.44,.42,.14,M.gin,0,.56,0);for(const y of [.48,.62])bx(b,.06,.06,.03,M.white,0,y,-.08);
+      a.al=grp(b,-.22,.7,0);bx(a.al,.3,.13,.13,M.gin,-.12,0,0);a.ar=grp(b,.22,.7,0);bx(a.ar,.3,.13,.13,M.gin,.12,0,0);
+      bx(b,.38,.34,.14,M.gin,0,.95,0);for(const s of [-1,1])bx(b,.06,.06,.03,M.white,s*.08,1.0,-.08);bx(b,.16,.03,.03,M.white,0,.88,-.08);break;
     case 'molecule':a.spin=grp(b,0,.4,0);bx(a.spin,.3,.3,.3,M.molA,0,0,0);
       for(let k=0;k<3;k++){const an=k/3*Math.PI*2,cx=Math.cos(an)*.42,cz=Math.sin(an)*.42,cy=(k-1)*.16;bx(a.spin,.2,.2,.2,k===1?M.molC:M.molB,cx,cy,cz);
         const st=bx(a.spin,.04,.04,.4,M.stick,cx/2,cy/2,cz/2);st.rotation.y=Math.atan2(cx,cz);}break;
@@ -2597,6 +2789,7 @@ function clearMobs(){for(const m of mobs)scene.remove(m.g);mobs.length=0;for(con
 function mobProfile(){
   if(P.oubliee)return inDome(pos.x,pos.y,pos.z)?{list:[['tigre',2],['singe',3],['perroquet',3]],max:9,rate:3.5,dome:1}:null;
   if(P.halloween)return{list:[['fantome',3],['citrouille',3],['squelette',3],['chauve',2],['sorciere',1]],max:8,rate:3.2};
+  if(P.fauna&&!aliensActive())return{list:P.fauna,max:9,rate:3};
   if(aliensActive())return P.bio===3?{list:[['soldat',5],['drone',3]],max:10,rate:3,saucers:2,near:1}:{list:[['soldat',4],['drone',2]],max:7,rate:4,saucers:1,near:1};
   if(P.bio===2)return{list:[['rampeur',1]],max:6,rate:7};
   if(P.bio===1)return{list:[['molecule',1]],max:4,rate:10};
@@ -2677,14 +2870,24 @@ function animMob(m,dt,hs){const a=m.a,t=m.t;
     case 'tigre':{const s=Math.sin(t*Math.max(3,hs*2.6))*Math.min(.7,hs*.18);a.legs.forEach((l,k)=>l.rotation.x=k===0||k===3?s:-s);a.tail.rotation.y=Math.sin(t*2)*.4;a.tail.rotation.x=.5;break;}
     case 'singe':{const s=Math.sin(t*4)*.6;a.al.rotation.x=-1.2+s;a.ar.rotation.x=-1.2-s;break;}
     case 'perroquet':{const f=Math.sin(t*14)*.6;a.wl.rotation.z=f;a.wr.rotation.z=-f;break;}
-    case 'molecule':a.spin.rotation.y+=dt*1.5;a.spin.rotation.x+=dt*.7;break;}}
+    case 'molecule':a.spin.rotation.y+=dt*1.5;a.spin.rotation.x+=dt*.7;break;}
+  if(m.T.grp==='f')animFauna(m,dt,hs);}
+function animFauna(m,dt,hs){const a=m.a,t=m.t,T=m.T;
+  if(a.legs){const s=Math.sin(t*Math.max(3,hs*2.6))*Math.min(.6,hs*.2);a.legs.forEach((l,k)=>l.rotation.x=k===0||k===3?s:-s);}
+  if(a.ll){const s=Math.sin(t*Math.max(2,hs*2.4))*Math.min(.7,hs*.3);a.ll.rotation.x=s;a.lr.rotation.x=-s;if(a.al){a.al.rotation.x=-s*.8;a.ar.rotation.x=s*.8;}}
+  if(a.wl){const f=Math.sin(t*(T.fly?8:5))*(T.fly?.6:.35);a.wl.rotation.z=f;a.wr.rotation.z=-f;}
+  if(a.tail)a.tail.rotation.y=Math.sin(t*2)*.35;
+  if(a.neck)a.neck.rotation.x=Math.sin(t*.7)*.08;
+  if(T.waddle)a.b.rotation.z=Math.sin(t*7)*Math.min(.18,hs*.12);
+  if(T.hop){const s=m.onG?1:1.12;a.b.scale.set(1/s,s,1/s);}}
 function placeMob(m){m.g.position.set(m.x,m.y,m.z);m.g.rotation.y=m.yaw;m.g.scale.setScalar(m.flash>0?1.15:1);}
 function mobStep(m,dt,dx,dz,dist){
   const T=m.T;m.t+=dt;m.cd-=dt;if(m.flash>0)m.flash-=dt;
   if(m.leave){m.vy=Math.min(14,m.vy+dt*8);m.y+=m.vy*dt;animMob(m,dt,0);placeMob(m);if(m.y>GTOP+30)removeMob(m);return;}
   const dy=pos.y+.6-(m.y+T.h*.5),d3=Math.hypot(dx,dy,dz);
   const hostile=!T.passive&&!inShip&&!inMS(),aggro=hostile&&d3<(T.saucer?60:T.aggro||30);
-  if(m.type==='tigre'&&aggro&&!m.roar){m.roar=1;tone(110,.6,'sawtooth',.06,.55);warn('tigre','Grrr ! Un tigre a vu Ballis : cours (X) ou défends-toi !');}else if(!aggro)m.roar=0;
+  if(m.type==='tigre'&&aggro&&!m.roar){m.roar=1;tone(110,.6,'sawtooth',.06,.55);warn('tigre','Grrr ! Un tigre a vu Ballis : cours (X) ou défends-toi !');}
+  else if(T.roar&&aggro&&!m.roar){m.roar=1;tone(80,.8,'sawtooth',.07,.5);warn(m.type,'Rooaar ! Le '+T.name+' a vu Ballis : cours (X) ou défends-toi !');}else if(!aggro)m.roar=0;
   if(m.hidden){
     if(hostile&&d3<6.5){m.hidden=false;m.rise=0;tone(260,.25,'sawtooth',.05,.5);warn('rampeur','Un rampeur extraterrestre sort de sa cachette !');}
     else{placeMob(m);return;}}
@@ -2706,7 +2909,7 @@ function mobStep(m,dt,dx,dz,dist){
       const l=d3||1;vel.x+=dx/l*6;vel.z+=dz/l*6;vel.y=Math.max(vel.y,3.5);tone(120,.15,'square',.05,.6);}}}
   animMob(m,dt,Math.hypot(m.vx,m.vz));placeMob(m);}
 function hitMob(m,dmg,fx,fz){if(m.dead)return;const T=m.T;
-  if(T.calm){m.vx+=fx*5;m.vz+=fz*5;m.flash=.12;tone(620,.08,'sine',.04,1.4);warn('calm',T.name+' est un animal gentil : il s’enfuit, mais il va bien !');return;}m.hp-=dmg;m.flash=.12;
+  if(T.calm){m.vx+=fx*5;m.vz+=fz*5;m.flash=.12;tone(620,.08,'sine',.04,1.4);{const e=T.f?'elle':'il';warn('calm','Doucement ! '+T.name+' est '+(T.f?'gentille':'gentil')+' : '+e+' s’enfuit, mais '+e+' va bien !');}return;}m.hp-=dmg;m.flash=.12;
   if(m.hidden){m.hidden=false;m.rise=0;}
   if(!T.saucer){m.vx+=fx*(T.fly?5:4);m.vz+=fz*(T.fly?5:4);if(!T.fly)m.vy=Math.max(m.vy,3);}
   for(let k=0;k<5;k++)puff(m.x,m.y+T.h*.5,m.z,T.col,(Math.random()-.5)*4,Math.random()*3,(Math.random()-.5)*4,.4,1);
@@ -2716,11 +2919,11 @@ function killMob(m){if(m.dead)return;m.dead=true;const T=m.T,s=S.stats;
   for(let k=0;k<(T.saucer?40:16);k++)puff(m.x+(Math.random()-.5)*T.w,m.y+Math.random()*T.h,m.z+(Math.random()-.5)*T.w,k%3?T.col:'#ffffff',(Math.random()-.5)*7,Math.random()*6,(Math.random()-.5)*7,.7+Math.random()*.5,T.saucer?2:1.2);
   const got=[];if(S.mode!=='libre')for(const [k,n] of T.drop){addInv(ID[k],n);got.push(n+' '+BLOCKS[ID[k]].name);}
   s.kills=s.kills||{};s.kills[m.type]=(s.kills[m.type]||0)+1;
-  if(T.grp==='h')s.killH=(s.killH||0)+1;else if(T.grp==='a')s.killA=(s.killA||0)+1;else if(T.grp==='j')s.killJ=(s.killJ||0)+1;else if(T.mol)s.mols=(s.mols||0)+1;
+  if(T.grp==='h')s.killH=(s.killH||0)+1;else if(T.grp==='a')s.killA=(s.killA||0)+1;else if(T.grp==='j')s.killJ=(s.killJ||0)+1;else if(T.grp==='f')s.killF=(s.killF||0)+1;else if(T.mol)s.mols=(s.mols||0)+1;
   if(T.saucer){s.saucers=(s.saucers||0)+1;bigText('Soucoupe abattue !',1.6);shake=Math.max(shake,.4);tone(90,.6,'sawtooth',.07,.3);}
   else if(T.mol)tone(880,.15,'sine',.05,1.5);else tone(T.grp==='a'?300:180,.25,'triangle',.05,.4);
   const tail=got.length?' : +'+got.join(', ')+'.':'.';
-  toast(T.mol?'Molécule extraterrestre récoltée'+tail:T.name+(T.grp==='h'||T.grp==='j'?' chassé':' éliminé')+(T.f?'e':'')+tail,2600,true);
+  toast(T.mol?'Molécule extraterrestre récoltée'+tail:T.name+(T.grp==='h'||T.grp==='j'||T.grp==='f'?' chassé':' éliminé')+(T.f?'e':'')+tail,2600,true);
   removeMob(m);renderHotbar();checkContracts();}
 // rayon de visée contre les boîtes des créatures (distance depuis la caméra)
 function pickMob(ox,oy,oz,dx,dy,dz,maxD){let best=null,bt=maxD;const o=[ox,oy,oz],d=[dx,dy,dz];
@@ -3649,8 +3852,8 @@ const SUNP=(function addSunInside(){const T=KINDS.soleil;
 const BASE_NP=PLANETS.length,BASE_NS=SYSTEMS.length,BASE_NG=GALAXIES.length,BASE_BODIES=SYSTEMS.map(s=>s.bodies.length);
 function setSunTarget(si){const s=SYSTEMS[si],p=PLANETS[SUNP],st=STARS[s.star];p.sys=si;p.gal=s.gal;p.star=s.star;p.sky=st.col;p.mapCol=st.col;
   p.name=s.real?'Cœur du Soleil':'Cœur de l’étoile '+s.name.replace(/^Système (de |du )?/,'');S.sunSys=si;}
-const KIND_CHOICES=['jardin','rouge','glace','lave','desert','lune','ocean','cristal','alien','jungle','fleurs','ruines','machine','ombre','bonbon','champi','fromage','nuage','gelee','arcenciel','gazeuse'];
-const KIND_TEMP={lave:.6,desert:.45,cristal:.35,glace:-.5,lune:-.2,fromage:-.2,gazeuse:-.4,ombre:-.3};
+const KIND_CHOICES=['jardin','rouge','glace','lave','desert','lune','ocean','cristal','alien','jungle','fleurs','ruines','machine','ombre','bonbon','champi','fromage','nuage','gelee','arcenciel','gazeuse','dino','banquise','savane','automne','cerisier','marais','jouets','gateau'];
+const KIND_TEMP={banquise:-.5,savane:.4,lave:.6,desert:.45,cristal:.35,glace:-.5,lune:-.2,fromage:-.2,gazeuse:-.4,ombre:-.3};
 const STAR_CHOICES=['jaune','orange','rouge','bleue','blanche','geante','double','violette','fantome'];
 const SKY_COLS=['#8cc7ff','#ffb3d9','#c6ffb0','#ffd6a0','#d6b0ff','#ff9a8a','#7fe0ff','#1a1030'];
 const GAL_COLS=['#7ad8ff','#ff8ad8','#a8ff7a','#ffd27a','#c08aff','#ff7a5a'];
@@ -3897,6 +4100,8 @@ const CONTRACTS=[
   {id:'fetenuit',t:'Fête de nuit',d:'Va à une fête de nuit sur la place de Balisland (le samedi soir)',goal:1,val:()=>st().fete?1:0},
   {id:'bouclier',t:'Sous le bouclier',d:'Regarde le bouclier de Balisland arrêter une météorite',goal:1,val:()=>st().shield?1:0},
   {id:'colonies',t:'Colonies spatiales',d:'Visite les 3 colonies de Ballis, dans des stations spatiales',goal:3,val:()=>Object.keys(st().cols||{}).length},
+  {id:'dinos',t:'Au temps des dinosaures',d:'Pose-toi sur Dinosauria, dans le Système de Balis',goal:1,val:()=>S.visited[DINO]?1:0},
+  {id:'merveilles',t:'Tour des merveilles',d:'Visite 5 sortes de nouvelles planètes (dinosaures, banquise, savane, jouets…)',goal:5,val:()=>new Set(PLANETS.filter(p=>p.nouv&&S.visited[p.i]).map(p=>p.kind)).size},
   {id:'nobel',t:'Génie cubique',d:'Complète toutes les théories du bureau scientifique',goal:THEO.length,val:()=>thCount()},
 ];
 function checkContracts(){for(const c of CONTRACTS){if(!S.done[c.id]&&c.val()>=c.goal){S.done[c.id]=true;toast('Contrat rempli : '+c.t,3200,true);tone(784,.12,'triangle',.06);setTimeout(()=>tone(1046,.25,'triangle',.06),110);}}renderContracts();}
@@ -4269,7 +4474,7 @@ function updateHud(){
   else pr.hidden=true;
   const nc=activeColonies().length,ac2=$('#alienChip');ac2.hidden=!nc;if(nc)ac2.textContent=nc+(nc>1?' planètes colonisées':' planète colonisée');
   const te=$('#target');
-  if(mobTarget){const m=mobTarget;te.textContent=m.T.name+' · santé '+Math.max(0,Math.ceil(m.hp))+'/'+m.T.hp+(m.T.passive?' · touche-la pour la récolter':'');}
+  if(mobTarget){const m=mobTarget;te.textContent=m.T.name+' · santé '+Math.max(0,Math.ceil(m.hp))+'/'+m.T.hp+(m.T.mol?' · touche-la pour la récolter':m.T.calm?' · animal gentil':'');}
   else if(target){const b=BLOCKS[target.id];te.textContent=b.name+(b.hard===Infinity?' · indestructible':' · dureté '+fr(b.hard,2));}else te.textContent='';
 }
 let attractT=0;
