@@ -1,24 +1,54 @@
-# Chantier Orbital
+# 🚀 Chantier Orbital
 
-Un jeu de construction spatiale en cubes, dans le navigateur. Tu es **Ballis**, une peluche cubique : fore le sol de Balis, la planète rouge, construis, fais le plein de ta fusée et pars explorer deux galaxies.
+**Tu es Ballis, une petite peluche cubique toute douce… et l'univers entier t'attend.**
 
-**Jouer :** https://sarahza.github.io/chantier-orbital/ (ou ouvre `index.html` dans un navigateur).
+Fore le sol rouge de Balis, construis ta base, fais le plein de ta fusée et décolle ! Cinq galaxies, plus de 300 planètes, des trous noirs qui cachent une prison mystérieuse, et même un univers parallèle : jusqu'où iras-tu ?
 
-## Dans le jeu
+### ▶️ [Jouer maintenant](https://sarahza.github.io/chantier-orbital/)
 
-- Deux galaxies, des centaines de planètes et de lunes, le vrai Système solaire et des mondes imaginaires.
-- Mode **Récolte** (santé, oxygène, repas) ou mode **Libre** (tout est illimité).
-- La planète **Halloween** et ses créatures, et des **extraterrestres** qui colonisent la galaxie.
-- Un **vaisseau-mère** à construire, qui voyage avec toi.
-- **Six sortes d'exoplanètes réalistes**, comme celles que les astronomes ont découvertes ou imaginées : la **planète verrouillée** (un côté toujours au soleil, l'autre toujours dans la nuit), la **planète de carbone** (graphite et diamants), la **planète de fer**, le **monde-océan** (glace haute pression au fond), l'**océan de magma** et la **planète asséchée** (déserts de sel). Elles sont dans la liste « Exoplanètes réalistes » de la carte.
-- La **planète oubliée**, cachée sous un immense dôme de verre : une jungle si épaisse qu'on s'y perd, avec des tigres, des singes et des perroquets. Suis le rayon de lumière pour retrouver ta fusée.
-- La **table d'ADNisation** : crée tes propres animaux avec des lianes, des molécules et de l'essence vivante. Choisis leur corps, leur taille, leurs couleurs, leurs yeux, leur tête, leur queue et leurs ailes. Ils te suivent partout.
-- Le **bureau scientifique** : 8 théories à compléter en répondant à des questions de science difficiles. Elles débloquent des machines, l'entrée dans les étoiles, et la création de planètes, de systèmes solaires et de galaxies.
-- D'**autres Ballis** à qui parler : les savants (EinsteinBalis, CurieBalis, NewtonBalis…) qui t'aident pour les théories, et des dizaines d'habitants qui se promènent.
-- **Balisland**, la grande ville au nord de Balis : des routes, trois quartiers (les Jardins, le Centre-ville et le Quartier moderne avec ses tours), **ta propre maison** avec son lit en guimauve (le soir, touche U pour dormir jusqu'au matin), des bâtiments meublés (les tours ont un escalier jusqu'au toit), les **Coin-Coin**, les voitures automatiques des Ballis qui font coin coin (monte dedans avec U), et un **bouclier** qui s'allume pendant les pluies de météorites pour protéger la ville. La ville vit vraiment : chaque Ballis a sa maison et son métier, il va au travail (sauf le mercredi, le dimanche et pendant les vacances), achète son pain à la boulangerie, rentre dormir le soir et parle de ce qui s'est passé. Les portes s'ouvrent toutes seules, on y respire sans casque, et le samedi soir il y a une fête de nuit avec des feux d'artifice. Toi aussi, tu peux travailler et aider les mamans, qui font la classe à leurs enfants à la maison.
-- Trois grandes **colonies de Ballis** dans des stations spatiales au-dessus de Mars, de la Lune et de Titan.
+Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordinateur.
 
-## Commandes (clavier)
+---
+
+## 🌌 Un univers immense à explorer
+
+- 🪐 **Plus de 300 planètes et lunes** : le vrai Système solaire avec la Terre, Mars et Jupiter, et des mondes imaginaires faits de bonbons, de fromage, de nuages ou de cristal.
+- ✨ **Cinq galaxies** : la Voie Lactée, la mystérieuse Galaxie perdue, la grande **Andromède**, le **Grand Nuage de Magellan**… et une cinquième, secrète.
+- 🕳️ **Des trous noirs**, comme Sagittarius A* au centre de la Voie Lactée. Ose plonger dedans… Au fond, il n'y a rien : c'est le **vide théorique**, une prison de matière noire violette. Pour t'en échapper, il faudra résoudre la **théorie du néant**, la plus difficile du jeu !
+- 🌀 **L'univers parallèle** : la théorie du néant te permet de construire la **Machine du vortex**. Elle ouvre un passage vers un univers miroir, où Balis s'appelle Silab et où les ciels ont des couleurs inversées.
+- 🔵 **Des trous de ver** : des tunnels qui traversent l'espace en un instant et te déposent dans une autre galaxie, sans dépenser une goutte de carburant.
+- ⚪ **Des trous blancs** : ils rejettent tout ce qui s'approche. Approche-toi si tu oses, et ils te projetteront à l'autre bout de l'univers !
+- ☀️ **Plonge au cœur des étoiles** avec le Bouclier solaire, et crée tes propres planètes, systèmes solaires et galaxies.
+
+## 🏙️ Balisland, la ville des Ballis
+
+Au nord de Balis s'étend **Balisland**, une vraie ville vivante !
+
+- Des dizaines de Ballis aux noms rigolos, qui ont chacun leur maison et leur métier.
+- Ils vont au travail (sauf le mercredi, le dimanche et pendant les vacances), achètent leur pain à la boulangerie, rentrent dormir le soir et parlent de ce qui s'est passé.
+- **Ta propre maison**, avec son lit en guimauve pour dormir jusqu'au matin.
+- Les **Coin-Coin**, les voitures automatiques qui font coin coin : monte dedans !
+- **Des petits boulots** pour aider les Ballis, des mamans à qui donner un coup de main, et **une fête de nuit** avec feux d'artifice chaque samedi soir.
+- Un **bouclier** qui s'allume pour protéger la ville des pluies de météorites.
+
+## 🔬 Deviens un vrai savant
+
+- Le **bureau scientifique** : 9 théories à compléter en répondant à de vraies questions de science sur l'ADN, la gravité, les étoiles, les galaxies… et le néant.
+- La **table d'ADNisation** : invente tes propres animaux (corps, couleurs, yeux, ailes, queue) qui te suivent partout.
+- Des savants Ballis pour t'aider : EinsteinBalis, CurieBalis, NewtonBalis…
+
+## 👾 De l'aventure
+
+- La planète **Halloween**, où il fait toujours nuit, avec ses fantômes, ses squelettes et ses sorcières.
+- La **planète oubliée**, une jungle cachée sous un dôme de verre, où l'on se perd au milieu des tigres et des perroquets.
+- Des **extraterrestres** qui colonisent la galaxie avec leurs soucoupes : libère les planètes !
+- Un **vaisseau-mère** à construire, qui voyage partout avec toi.
+- Trois **colonies de Ballis** dans des stations spatiales, au-dessus de Mars, de la Lune et de Titan.
+- Deux modes de jeu : **Récolte**, où il faut surveiller sa santé, son oxygène et ses repas, ou **Libre**, où tout est illimité.
+
+---
+
+## 🎮 Les touches
 
 | Touche | Action |
 | --- | --- |
@@ -29,8 +59,8 @@ Un jeu de construction spatiale en cubes, dans le navigateur. Tu es **Ballis**, 
 | E | Soute et atelier |
 | M | Carte des galaxies |
 | G | Manger |
-| U | Parler aux Ballis, monter dans un Coin-Coin, utiliser la table d'ADNisation, caresser tes animaux |
+| U | Parler aux Ballis, monter dans un Coin-Coin, utiliser une machine, caresser tes animaux |
 | B | Bureau scientifique |
 | Échap | Pause |
 
-Le jeu tient dans un seul fichier HTML et utilise [Three.js](https://threejs.org/) r128.
+Le jeu tient dans un seul fichier HTML et utilise [Three.js](https://threejs.org/) r128. Ta partie est enregistrée dans ton navigateur.
