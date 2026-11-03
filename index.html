@@ -630,7 +630,7 @@ blk('verreDome','Verre du dôme',{hard:.9,color:'#aef0c8',cat:1});
 blk('pain','Pain',{hard:.1,color:'#d8a050',raw:true,food:30});
 blk('porte','Porte',{hard:.4,color:'#9a6a3a'});
 blk('porteO','Porte ouverte',{hard:.4,color:'#9a6a3a',cat:2,pass:true});
-// anciens blocs de la version 21 (gardés pour que les numéros des blocs restent les mêmes)
+// anciens blocs des versions 21 et 22 (gardés pour que les numéros des blocs restent les mêmes)
 blk('herbeSeche','Herbe sèche',{hard:.3,color:'#c8a84a',raw:true,ts:58,tb:27});
 blk('feuillesRousses','Feuilles d’automne',{hard:.12,color:'#e07a2a',cat:2,raw:true});
 blk('fleurCerisier','Fleurs de cerisier',{hard:.12,color:'#ffb8d8',cat:2,raw:true});
@@ -641,17 +641,19 @@ blk('jouetBleu','Brique bleue',{hard:.3,color:'#2a6ae8',raw:true});
 blk('jouetJaune','Brique jaune',{hard:.3,color:'#f5c81a',raw:true});
 blk('jouetVert','Brique verte',{hard:.3,color:'#3ab84a',raw:true});
 blk('fougere','Fougère',{hard:.1,color:'#4aa83a',cat:2,raw:true});
-// exoplanètes réalistes : carbone, fer, monde-océan et planète asséchée
 blk('graphite','Graphite',{hard:.35,color:'#3a3a40',raw:true});
 blk('diamant','Diamant brut',{hard:2,color:'#d8f4ff',glow:true,tier:2,raw:true});
 blk('ferNatif','Fer natif',{hard:.9,color:'#8a8a92',raw:true});
 blk('glaceHP','Glace haute pression',{hard:.8,color:'#7ab8d8',raw:true});
 blk('sel','Croûte de sel',{hard:.25,color:'#f0ece4',raw:true});
+// le vide théorique, au fond des trous noirs : une prison de matière noire
+blk('matiereNoire','Matière noire',{hard:Infinity,color:'#5a1a9a',glow:true});
+blk('terminalNeant','Terminal du néant',{hard:Infinity,color:'#b06bff',glow:true});
 const OPAQ=new Uint8Array(BLOCKS.length);for(let i=1;i<BLOCKS.length;i++)OPAQ[i]=BLOCKS[i].cat===0?1:0;
 const SOLID=new Uint8Array(BLOCKS.length);for(let i=1;i<BLOCKS.length;i++)SOLID[i]=BLOCKS[i].liq||BLOCKS[i].pass?0:1;
 const GONE=new Set(['moquette','papierPeint','plafond','neonBR','caisse','sortie','moquetteBleue','papierFete','lampeRouge',
-  'herbeSeche','feuillesRousses','fleurCerisier','boue','oeufDino','jouetRouge','jouetBleu','jouetJaune','jouetVert','fougere'].map(k=>ID[k]));
-const HIDDEN=new Set([...GONE,ID.porteO,ID.noyau,ID.socle,ID.eau,ID.lave,ID.gaz,ID.coeurAlien,ID.vmCoque,ID.vmVitre,ID.teleporteur,ID.pilote,ID.vmLum,ID.sortie,ID.plasma]);
+  'herbeSeche','feuillesRousses','fleurCerisier','boue','oeufDino','jouetRouge','jouetBleu','jouetJaune','jouetVert','fougere','graphite','diamant','ferNatif','glaceHP','sel'].map(k=>ID[k]));
+const HIDDEN=new Set([...GONE,ID.matiereNoire,ID.terminalNeant,ID.porteO,ID.noyau,ID.socle,ID.eau,ID.lave,ID.gaz,ID.coeurAlien,ID.vmCoque,ID.vmVitre,ID.teleporteur,ID.pilote,ID.vmLum,ID.sortie,ID.plasma]);
 
 const RECIPES=[
   {out:'acier',n:2,in:{fer:1}},
@@ -699,6 +701,7 @@ const UPGRADES=[
   {key:'inter',icon:'meteorite',name:'Moteur intergalactique',desc:'Permet de sauter vers la galaxie perdue (et d’en revenir). Un saut entre galaxies coûte 60 unités.',in:{meteorite:4,titane:6,cristal:6},done:()=>S.inter,lock:()=>null,apply:()=>{S.inter=true;}},
   {key:'grav',icon:'neonRose',name:'Gravité artificielle',desc:'Ballis saute 30 % plus haut et ne se fait plus mal en tombant de haut.',in:{titanR:2,cristal:4,cuivre:4},done:()=>!!S.grav,lock:()=>!thDone('gravite')?'Complète d’abord la théorie « Gravité » au bureau scientifique (B).':null,apply:()=>{S.grav=true;}},
   {key:'relat',icon:'teleporteur',name:'Moteur relativiste',desc:'Les sauts vers une autre planète ne coûtent plus que 5 unités de carburant, et 30 vers une autre galaxie.',in:{titanR:4,cristal:6,or:4,molecule:2},done:()=>!!S.relat,lock:()=>!thDone('relat')?'Complète d’abord la théorie « Relativité » au bureau scientifique (B).':null,apply:()=>{S.relat=true;}},
+  {key:'vortex',icon:'terminalNeant',name:'Machine du vortex',desc:'Ouvre un vortex vers l’univers parallèle, et permet d’en revenir. Un saut par le vortex coûte 40 unités de carburant.',in:{obsidienne:6,cristal:10,titane:6,meteorite:4},done:()=>!!S.vortex,lock:()=>!thDone('neant')?'Résous d’abord la théorie du néant : on ne la trouve qu’au fond d’un trou noir, dans la prison du vide théorique.':null,apply:()=>{S.vortex=true;renderGalBtns();bigText('Vortex ouvert !',2);}},
   {key:'sunshield',icon:'plasmaSolide',name:'Bouclier solaire',desc:'Protège Ballis de la chaleur folle à l’intérieur des étoiles. Ensuite, ouvre la carte depuis l’espace, choisis une étoile et plonge dedans !',in:{titanR:6,cristal:6,glace:10,or:4},done:()=>!!S.sunShield,lock:()=>!thDone('fusion')?'Complète d’abord la théorie « Fusion stellaire » au bureau scientifique (B).':null,apply:()=>{S.sunShield=true;}},
 ];
 
@@ -852,22 +855,22 @@ const atlas=document.createElement('canvas');atlas.width=TS*ACOLS;atlas.height=T
   tile(T_('pain'),(x,y)=>{const d=Math.hypot((x-7.5)/6.5,(y-8.5)/4.5);if(d>1)return[0,0,0,0];if(y>=6&&y<=11&&(x===5||x===8||x===11)&&y<10)return hex('#f4d8a0');return mul(hex(d>.8?'#a8682a':'#d89a48'),.92+R()*.12);});
   tile(T_('porte'),(x,y)=>{if(x===0||x===15||y===0)return hex('#5a3a1a');if(x===12&&y===8)return hex('#ffd23a');if(x%5===0)return hex('#7a5028');return mul(hex('#a8743e'),.92+R()*.1);});
   tile(T_('porteO'),(x,y)=>{if(x<3)return x===2?hex('#5a3a1a'):mul(hex('#a8743e'),.92+R()*.1);if(y===0)return hex('#5a3a1a');return[0,0,0,0];});
-  tile(T_('herbeSeche'),()=>{let c=mul(hex('#c8a84a'),.82+R()*.3);if(R()<.08)c=hex('#e8d07a');return c;});
-  tile(58,(x,y)=>{const edge=3+((x*7+3)%3===0?1:0);if(y<edge)return mul(hex('#c8a84a'),.82+R()*.3);return dirt();});
-  tile(T_('feuillesRousses'),()=>{if(R()<.16)return[0,0,0,0];return[...mul(hex(['#ff8a2a','#f0502a','#ffc03a'][R()*3|0]),.88+R()*.25),255];});
-  tile(T_('fleurCerisier'),()=>{if(R()<.14)return[0,0,0,0];if(R()<.2)return[255,240,248,255];return[...mul(hex('#ffaad0'),.85+R()*.2),255];});
-  tile(T_('boue'),(x,y)=>{if(Math.hypot((x%8)-4,(y%8)-4)<1.5)return mul(hex('#3a3020'),.9+R()*.15);return mul(hex('#5a4a2e'),.8+R()*.3);});
-  tile(T_('oeufDino'),(x,y)=>{const d=Math.hypot((x-7.5)/5.5,(y-8)/7);if(d>1)return[0,0,0,0];return mul(hex('#efe6c0'),.94+R()*.06);});
-  const toy=c=>(x,y)=>{const b=hex(c),cx=x%8-3.5,cy=y%8-3.5,d=Math.hypot(cx,cy);if(x===0||y===0)return mul(b,1.15);if(x===15||y===15)return mul(b,.7);
-    if(d<2.2)return mul(b,1.08);if(d<2.8)return mul(b,.8);return mul(b,.97+R()*.04);};
-  tile(T_('jouetRouge'),toy('#e8342a'));tile(T_('jouetBleu'),toy('#2a6ae8'));tile(T_('jouetJaune'),toy('#f5c81a'));tile(T_('jouetVert'),toy('#3ab84a'));
-  tile(T_('fougere'),(x,y)=>{if(R()<.4)return[0,0,0,0];return[...mul(hex('#4aa83a'),.7+R()*.4),255];});
-  tile(T_('graphite'),(x,y)=>{const n=((x*3+y*7)%11)/11;if(R()<.05)return hex('#8a8a96');return mul(hex('#34343a'),.8+n*.3+R()*.1);});
-  tile(T_('diamant'),(x,y)=>{const n=[[4,4],[11,5],[7,11],[13,12]];for(const [cx,cy] of n){const d=Math.abs(x-cx)+Math.abs(y-cy);if(d<2.6)return d<1?hex('#ffffff'):mix(hex('#f0fcff'),hex('#8ad8f0'),d/2.6);}
-    return mul(hex('#34343a'),.8+R()*.3);});
-  tile(T_('ferNatif'),(x,y)=>{if((x+y)%7===0&&R()<.6)return hex('#c8ccd4');if(R()<.06)return hex('#6a4a3a');return mul(hex('#84848c'),.85+R()*.2);});
-  tile(T_('glaceHP'),(x,y)=>{const f=((x*5+y*3)%9)/9;return mix(mul(hex('#4a88b0'),.9+R()*.1),hex('#b0e0f4'),f*.5);});
-  tile(T_('sel'),(x,y)=>{const cx=x%8,cy=(y+(Math.floor(x/8)%2)*4)%8;if(cx===0||cy===0)return mul(hex('#c8c0b0'),.95+R()*.06);return mul(hex('#f4f0e8'),.95+R()*.06);});
+  tile(T_('herbeSeche'),()=>mul(hex('#c8a84a'),.82+R()*.3));
+  tile(58,(x,y)=>y<3?mul(hex('#c8a84a'),.82+R()*.3):dirt());
+  tile(T_('feuillesRousses'),()=>R()<.16?[0,0,0,0]:[...mul(hex('#f0602a'),.8+R()*.3),255]);
+  tile(T_('fleurCerisier'),()=>R()<.14?[0,0,0,0]:[...mul(hex('#ffaad0'),.85+R()*.2),255]);
+  tile(T_('boue'),()=>mul(hex('#5a4a2e'),.8+R()*.3));
+  tile(T_('oeufDino'),()=>mul(hex('#efe6c0'),.94+R()*.06));
+  for(const [k,c] of [['jouetRouge','#e8342a'],['jouetBleu','#2a6ae8'],['jouetJaune','#f5c81a'],['jouetVert','#3ab84a']])tile(T_(k),()=>mul(hex(c),.95+R()*.08));
+  tile(T_('fougere'),()=>R()<.4?[0,0,0,0]:[...mul(hex('#4aa83a'),.7+R()*.4),255]);
+  tile(T_('graphite'),()=>mul(hex('#34343a'),.8+R()*.3));
+  tile(T_('diamant'),()=>R()<.2?hex('#e8faff'):mul(hex('#34343a'),.8+R()*.3));
+  tile(T_('ferNatif'),()=>mul(hex('#84848c'),.85+R()*.2));
+  tile(T_('glaceHP'),()=>mul(hex('#5a98c0'),.9+R()*.15));
+  tile(T_('sel'),()=>mul(hex('#f4f0e8'),.95+R()*.06));
+  tile(T_('matiereNoire'),(x,y)=>{const a=Math.sin(x*.7+y*.35)+Math.cos(y*.6-x*.45);return mix(hex('#14042a'),hex('#a050ff'),Math.max(0,a)*.32+R()*.12);});
+  tile(T_('terminalNeant'),(x,y)=>{if(x===0||y===0||x===15||y===15)return hex('#2a0a4a');const d=Math.hypot(x-7.5,y-7.5);
+    if(Math.abs(d-4.5)<1||(Math.abs(x+y-15)<1.1&&d<6.5))return hex('#f0d8ff');return mix(hex('#3a0a6a'),hex('#9a4aff'),Math.max(0,1-d/8)*.6+R()*.08);});
   tile(T_('verreDome'),(x,y)=>{if(x===0||y===0)return[120,190,150,255];if(Math.abs(x-y-3)<1.1)return[245,255,250,110];return[150,235,190,48];});
   tile(T_('coeurEtoile'),(x,y)=>{const dx=Math.abs(x-7.5),dy=Math.abs(y-7.5);if(dx+dy<3.5||(dx<1&&dy<6)||(dy<1&&dx<6))return mix(hex('#ffffff'),hex('#fff2a0'),(dx+dy)/6);return mul(hex('#e86a1a'),.75+R()*.3);});
   g.putImageData(img,0,0);
@@ -958,27 +961,6 @@ KINDS.oubliee={label:'Planète oubliée',imag:true,g:.5,sky:'#8ad0a0',cloud:'#ea
   desc:'Une planète que tout le monde a oubliée, enveloppée par un immense dôme de verre. Dessous pousse une jungle luxuriante, si épaisse qu’on s’y perd très vite… Et il y a des tigres, des singes et des perroquets ! Autour du dôme, un désert de cailloux gris.'};
 KINDS.soleil={label:'Intérieur d’étoile',g:.5,sky:'#ffb050',cloud:null,light:'#fff0c8',top:'plasmaSolide',sub:'plasmaSolide',stone:'plasmaSolide',hb:0,ha:0,hf:.03,trees:[],res:['plasmaSolide','coeurEtoile'],
   desc:'L’intérieur brûlant d’une étoile : un océan de plasma et des îles de plasma figé. Les cœurs d’étoile brillent dans les îles : il en faut pour créer des systèmes solaires et des galaxies.'};
-// version 22 : des sortes d'exoplanètes réalistes, comme celles que les astronomes ont découvertes ou imaginées
-Object.assign(KINDS,{
-  verrouillee:{label:'Planète verrouillée',g:.45,sky:'#d8946a',cloud:'#f0c8a8',light:'#ffd8b8',top:'regolithe',sub:'roche',stone:'roche',liquid:'eau',sea:10,hb:13,ha:9,hf:.03,locked:1,
-    trees:[['rocher',.002]],res:['regolithe','glace','basalte','fer'],
-    desc:'Comme Proxima b ou TRAPPIST-1 e, elle montre toujours la même face à son étoile. D’un côté (l’est), un jour sans fin : le sol brûle et la lave coule. De l’autre (l’ouest), une nuit éternelle et glacée. On ne peut se poser que sur la bande entre les deux, où l’étoile reste toujours à l’horizon.'},
-  carbone:{label:'Planète de carbone',g:.6,sky:'#5a4632',cloud:'#7a6650',light:'#ffe0b8',top:'graphite',sub:'graphite',stone:'graphite',hb:13,ha:10,hf:.03,craters:4,rich:'diamant',
-    trees:[],res:['graphite','diamant','fer','cuivre'],
-    desc:'Une planète pleine de carbone, comme on l’a imaginé pour 55 Cancri e. Le sol est en graphite noir (la mine des crayons !) et, en profondeur, la pression transforme le carbone en diamant. Le ciel est brumeux et brun.'},
-  fer:{label:'Planète de fer',g:1.4,sky:null,top:'ferNatif',sub:'fer',stone:'ferNatif',hb:12,ha:8,hf:.035,craters:18,rich:'titane',
-    trees:[['rocher',.0015]],res:['ferNatif','fer','titane','or'],
-    desc:'Une planète faite presque toute de fer, comme GJ 367 b ou Kepler-107 c : c’est le cœur d’une planète qui a perdu ses couches de roche. Elle est si dense que la gravité écrase, et elle n’a pas d’air.'},
-  oceanProfond:{label:'Monde-océan',g:.8,sky:'#6a96c0',cloud:'#dce8f4',clouds:.4,top:'glaceHP',sub:'glaceHP',stone:'roche',liquid:'eau',sea:30,hb:8,ha:4,hf:.03,
-    trees:[],res:['glaceHP','glace','roche','cuivre'],
-    desc:'Un monde couvert d’un océan sans aucune côte, comme on pense que Kepler-22 b ou TOI-270 d pourraient l’être. L’eau est si profonde qu’au fond, écrasée par la pression, elle devient de la glace haute pression, même sans froid. Seule ta plateforme dépasse de l’eau.'},
-  magma:{label:'Océan de magma',g:.55,sky:'#3a1410',cloud:'#5a2a20',light:'#ffc8a0',top:'basalte',sub:'basalte',stone:'obsidienne',liquid:'lave',sea:13,hb:12,ha:5,hf:.035,craters:3,
-    trees:[['pic',.003]],res:['basalte','obsidienne','soufre','or'],
-    desc:'Une très jeune planète, encore couverte d’un océan de roche fondue, comme la Terre juste après sa naissance ou comme K2-141 b aujourd’hui. Quelques croûtes de basalte flottent dessus. Ne tombe pas dans le magma !'},
-  sel:{label:'Planète asséchée',g:.4,sky:'#e8d8c4',cloud:'#fff6ec',top:'sel',sub:'sel',stone:'roche',hb:13,ha:3,hf:.02,craters:2,
-    trees:[['rocher',.001]],res:['sel','roche','cuivre','or'],
-    desc:'Une planète qui a perdu presque toute son eau, comme Mars il y a très longtemps. Il ne reste que d’immenses déserts de sel blanc, tout plats et craquelés, là où il y avait des mers. L’air est trop mince pour respirer.'},
-});
 const PLANETS=[];
 (function buildGalaxy(){
   const R=mulberry32(2026);
@@ -1029,6 +1011,9 @@ const STARS={
   double:{label:'Étoile double',col:'#ffe2b0',lum:1.3,size:.85,double:true},
   fantome:{label:'Étoile fantôme',col:'#a8ffe0',lum:.6,size:1.1},
   violette:{label:'Étoile violette',col:'#d6a8ff',lum:.9,size:1.2},
+  trouNoir:{label:'Trou noir',col:'#5a2a8a',lum:.06,size:.9,bh:true,special:true},
+  trouVer:{label:'Trou de ver',col:'#6af0ff',lum:0,size:1,ver:true,special:true},
+  trouBlanc:{label:'Trou blanc',col:'#ffffff',lum:0,size:1.5,blanc:true,special:true},
 };
 const GALAXIES=[{name:'Voie Lactée',desc:'Ta galaxie : le Système de Balis, le Système solaire avec la Terre et Jupiter, et des dizaines d’autres étoiles.'},
   {name:'La galaxie perdue',desc:'Une galaxie lointaine et mystérieuse : des ruines anciennes, des jungles géantes, des planètes machines et des étoiles étranges.'}];
@@ -1179,33 +1164,6 @@ const OUBL=(function addOubliee(){
     else if(p.bio===2)p.desc+=' On dit que des créatures extraterrestres s’y cachent…';
     else if(p.bio===1)p.desc+=' Des molécules extraterrestres flottent près du sol.';}
 })();
-/* --- Les exoplanètes réalistes sont ajoutées dans des systèmes déjà connus, après toutes les anciennes planètes, pour garder leurs numéros --- */
-// toujours 32 planètes : elles prennent les numéros qu'avaient les planètes de la version 21
-const NEWP0=PLANETS.length,EXO_KINDS=['verrouillee','carbone','fer','oceanProfond','magma','sel'];
-const EXO_NAMED=(function addExoplanets(){
-  const R=mulberry32(2222),pick=a=>a[R()*a.length|0];
-  const sh=(hexc,dh,ds,dl)=>{const c=new THREE.Color(hexc),h={};c.getHSL(h);c.setHSL((h.h+dh+1)%1,Math.max(0,Math.min(1,h.s+ds)),Math.max(.05,Math.min(.92,h.l+dl)));return '#'+c.getHexString();};
-  const TEMP={verrouillee:0,carbone:.4,fer:.5,oceanProfond:.2,magma:.9,sel:.55};
-  // noms de catalogue, comme les vrais astronomes : un numéro par étoile, puis b, c, d… pour ses planètes
-  const num={};const nameOf=s=>{if(!num[s.i])num[s.i]=(s.gal?'LGP-':'BLS-')+(100+(R()*900|0));const k=s.bodies.filter(j=>PLANETS[j].exo).length;return num[s.i]+' '+'bcdefgh'[k];};
-  const add=(kind,s,vary)=>{const T=KINDS[kind],st=STARS[s.star];
-    const p=Object.assign({},T,{trees:T.trees.map(t=>t.slice()),i:PLANETS.length,kind,name:nameOf(s),gal:s.gal,sys:s.i,parent:-1,moonIds:[],ang:R()*Math.PI*2,
-      orbit:Math.max(0,...s.bodies.map(j=>PLANETS[j].orbit))+1,star:s.star,rogue:false,temp:TEMP[kind],day:T.locked?0:4+Math.round(R()*8),bio:0,role:'Exoplanète',exo:1});
-    if(vary){p.g=Math.round(T.g*(.8+R()*.4)*100)/100;p.hb=T.hb+Math.round((R()-.5)*3);p.ha=T.ha*(.7+R()*.6);p.hf=T.hf*(.8+R()*.4);
-      if(T.sky)p.sky=sh(T.sky,(R()-.5)*.08,(R()-.5)*.12,(R()-.5)*.08);}
-    let d=T.desc;if(p.g>.9)d+=' Gravité très forte : ta fusée doit forcer.';p.desc=d;
-    p.orbitR=Math.sqrt(st.lum/(.5*Math.pow(2,p.temp/.32)))/.8;p.flux=orbitFlux(st.lum,p.orbitR);
-    p.bright=Math.max(.98,Math.min(1.2,.92+.22*Math.log2(p.flux/.5)));p.air=false;
-    p.deco=R()<.4?1:0;p.moonsN=p.deco;p.mapCol=BLOCKS[ID[p.top]].color;
-    PLANETS.push(p);s.bodies.push(p.i);return p;};
-  const hallo=PLANETS[HALLO].sys,g0=SYSTEMS.filter(s=>s.gal===0&&!s.real&&s.i!==0&&s.i!==hallo),g1=SYSTEMS.filter(s=>s.gal===1);
-  for(let i=g0.length-1;i>0;i--){const j=R()*(i+1)|0;[g0[i],g0[j]]=[g0[j],g0[i]];}
-  // la planète verrouillée tourne autour d'une naine rouge, comme Proxima b
-  const red=g0.filter(s=>s.star==='rouge'),named=[];
-  EXO_KINDS.forEach((k,n)=>named.push(add(k,k==='verrouillee'&&red.length?red[0]:g0[(n+3)%g0.length],false).i));
-  for(let q=0;q<26;q++){const k=EXO_KINDS[q%EXO_KINDS.length],s=q<10?pick(g0):pick(g1);add(k,k==='verrouillee'&&q<10&&red.length?pick(red):s,true);}
-  return named;
-})();
 let PI_CUR=0,P=PLANETS[0];
 function planetSeed(i,seed){return i===0?seed:(seed^Math.imul(i+1,-1640531535))|0;}
 
@@ -1353,7 +1311,22 @@ function plant(type,x,y,z,R){
     case 'rocher':{const r=1+R()*1.3;for(let dy=-1;dy<=2;dy++)for(let dz=-2;dz<=2;dz++)for(let dx=-2;dx<=2;dx++)if(Math.hypot(dx,dy,dz)<=r)putB(x+dx,y+dy,z+dz,ID[P.stone]===ID.fromage?ID.fromage:B.roche);break;}
   }
 }
+function genVide(Pl,R){
+  const open=thDone('neant'),y0=20,r=9,h=8,N=ID.matiereNoire;BASE.y=y0+1;
+  for(let z=0;z<D;z++)for(let x=0;x<W;x++)world[idx(x,0,z)]=ID.socle;
+  buildPad(y0);
+  for(let z=-r;z<=r;z++)for(let x=-r;x<=r;x++){const X=BASE.x+x,Z=BASE.z+z,edge=Math.abs(x)===r||Math.abs(z)===r;
+    world[idx(X,y0-1,Z)]=N;if(Math.abs(x)>5||Math.abs(z)>5)world[idx(X,y0,Z)]=N;
+    if(edge)for(let y=y0+1;y<=y0+h;y++)world[idx(X,y,Z)]=N;
+    else if(!open&&(x+z)%3===0&&Math.abs(x)>6)for(let y=y0+1;y<=y0+h;y++)world[idx(X,y,Z)]=N;
+    if(!open)world[idx(X,y0+h+1,Z)]=N;}
+  world[idx(BASE.x-6,y0+1,BASE.z-6)]=ID.terminalNeant;world[idx(BASE.x-6,y0+2,BASE.z-6)]=ID.terminalNeant;
+  // des morceaux de matière noire flottent dans le vide
+  for(let i=0;i<46;i++){const cx=6+R()*(W-12),cz=6+R()*(D-12),cy=8+R()*40,rr=1+R()*2.5;if(nearPad(cx,cz,r+6))continue;
+    for(let y=Math.floor(cy-rr);y<=cy+rr;y++)for(let z=Math.floor(cz-rr);z<=cz+rr;z++)for(let x=Math.floor(cx-rr);x<=cx+rr;x++)
+      if(x>0&&z>0&&x<W&&z<D&&y>0&&y<H&&Math.hypot(x+.5-cx,y+.5-cy,z+.5-cz)<rr)world[idx(x,y,z)]=N;}}
 function genPlanet(Pl,R){
+  if(Pl.vide){genVide(Pl,R);return;}
   if(Pl.gas){genGas(Pl,R);return;}
   if(Pl.sun){genSun(Pl,R);return;}
   const hm=new Float32Array(W*D);
@@ -1361,8 +1334,9 @@ function genPlanet(Pl,R){
   for(let i=0;i<(Pl.craters||0);i++){const x=10+R()*(W-20),z=10+R()*(D-20);if(Math.hypot(x-BASE.x,z-BASE.z)<22)continue;craters.push([x,z,3+R()*9]);}
   const mtn={x:20+R()*(W-40),z:20+R()*(D-40),r:20+R()*16,h:Pl.ha*(.8+R())};
   if(Math.hypot(mtn.x-BASE.x,mtn.z-BASE.z)<mtn.r+16)mtn.h=0;
+  const hv=((Math.imul(Pl.i+3,-1640531535)>>>0)%3)-1;
   for(let z=0;z<D;z++)for(let x=0;x<W;x++){
-    let h=Pl.hb+(fbm2(x*Pl.hf,z*Pl.hf)-.45)*Pl.ha*2;
+    let h=Pl.hb+hv+(fbm2(x*Pl.hf,z*Pl.hf)-.45)*Pl.ha*2;
     if(Pl.dunes)h+=Math.sin(x*.11+fbm2(x*.02,z*.02)*6)*2.4;
     const rv=Math.hypot(x-mtn.x,z-mtn.z);if(mtn.h&&rv<mtn.r)h+=Math.pow(1-rv/mtn.r,1.6)*mtn.h;
     for(const [cx,cz,cr] of craters){const d=Math.hypot(x-cx,z-cz)/cr;if(d<1)h-=(1-d*d)*cr*.4;else if(d<1.35)h+=(1.35-d)*cr*.25;}
@@ -1384,13 +1358,14 @@ function genPlanet(Pl,R){
     const t=Math.floor(hm[x+z*W]);
     world[idx(x,0,z)]=ID.socle;
     const tb=snowAll||t>snowLine?ID.neige:dry?ID.terre:top;
+    const vl=vnoise(x*.09,5.3,z*.09),tD=vl>.74?2:1,sD=Math.max(tD+1,subD+(vl<.26?-1:vl>.62?1:0));
     for(let y=1;y<=t;y++){
       const depth=t-y;let id;
-      if(depth<1)id=liq&&t<=sea?beach:tb;
-      else if(depth<subD)id=liq&&t<=sea&&Pl.beach?beach:sub;
+      if(depth<tD)id=liq&&t<=sea?beach:tb;
+      else if(depth<sD)id=liq&&t<=sea&&Pl.beach?beach:sub;
       else{const n=vnoise(x*.18,y*.18,z*.18),n2=vnoise(x*.2+50,y*.2,z*.2),n3=vnoise(x*.3,y*.3+90,z*.3);
         if(n>.8)id=ID.fer;else if(n<.14)id=Pl.kind==='lave'?ID.basalte:ID.glace;else if(n2>.83)id=ID.cuivre;
-        else if(n3>(rich==='or'?.82:.9)&&y<10)id=ID.or;else if(rich==='diamant'&&n3>.85&&y<12)id=ID.diamant;else if(n3<(rich==='cristal'?.12:.05))id=ID.cristal;
+        else if(n3>(rich==='or'?.82:.9)&&y<10)id=ID.or;else if(n3<(rich==='cristal'?.12:.05))id=ID.cristal;
         else if(rich==='titane'&&n3>.84&&y<9)id=ID.titane;else id=stone;}
       world[idx(x,y,z)]=id;
     }
@@ -1412,13 +1387,6 @@ function genPlanet(Pl,R){
       putB(cx,t+1,cz,ID.coffre,true);}
     else{const n=3+(R()*3|0),ax=R()<.5;for(let k=0;k<n;k++){const x=cx+(ax?k*2:0),z=cz+(ax?0:k*2),tt=Math.floor(hm[Math.min(W-1,x)+Math.min(D-1,z)*W]),h=1+(R()*5|0);for(let y=1;y<=h;y++)putB(x,tt+y,z,PA);}}
     if(R()<.5){const bx=cx+5,bz=cz+2,bt=Math.floor(hm[Math.min(W-1,bx)+Math.min(D-1,bz)*W]);putB(bx,bt-2,bz,ID.coffre,true);}}
-  // planète verrouillée : à l'est le côté du jour (brûlant), à l'ouest le côté de la nuit (gelé)
-  if(Pl.locked)for(let z=0;z<D;z++)for(let x=0;x<W;x++){if(nearPad(x,z,12))continue;
-    const f=x/W+(fbm2(x*.05+7,z*.05)-.45)*.12,t=Math.floor(hm[x+z*W]);
-    if(f>.64){for(let y=Math.max(1,t-3);y<=t;y++)world[idx(x,y,z)]=y===t&&f>.8&&vnoise(x*.2,1,z*.2)>.55?ID.obsidienne:ID.basalte;
-      const lv=f>.84?Pl.hb+2:f>.72?Pl.hb:0;for(let y=t+1;y<=Math.max(sea,lv);y++)world[idx(x,y,z)]=y<=lv?ID.lave:0;}
-    else if(f<.36){for(let y=Math.max(1,t-2);y<=t;y++)world[idx(x,y,z)]=y===t?ID.neige:ID.glace;
-      for(let y=t+1;y<=sea;y++)if(world[idx(x,y,z)]===ID.eau)world[idx(x,y,z)]=ID.glace;}}
   // planète Halloween : lanternes autour de l'aire, cimetières et maisons hantées
   const msZone=(cx,cz)=>cx>BASE.x+6&&cx<BASE.x+54&&Math.abs(cz-BASE.z)<18;
   if(Pl.halloween)for(const [dx,dz] of [[-8,-8],[8,-8],[-8,8],[8,8]])putB(BASE.x+dx,padH+1,BASE.z+dz,ID.lanterne,true);
@@ -1779,18 +1747,14 @@ function newGame(mode){
   S=freshState(seed,mode||'survie');rebuildMade();enterPlanet(0);rebuildPets();spawnHome();parkShip();inShip=false;markAll(pos.x,pos.y,pos.z);
 }
 function loadGame(d){
-  // version 4 : 32 planètes passent avant l'intérieur d'étoile et les planètes créées, dont les numéros augmentent
-  if((d.v||1)<4){const N=SUNP-NEWP0,mv=o=>{if(!o)return o;const r={};for(const k in o){const n=+k;r[n>=NEWP0?n+N:n]=o[k];}return r;};
-    d.pedits=mv(d.pedits);d.visited=mv(d.visited);d.colonies=mv(d.colonies);d.beaten=mv(d.beaten);if((d.planet|0)>=NEWP0)d.planet=(d.planet|0)+N;
-    for(const k in d.colonies||{}){const c=d.colonies[k];if(c&&c.from>=NEWP0)c.from+=N;}}
-  // version 5 : ces 32 planètes sont devenues des exoplanètes réalistes, leurs anciens paysages sont oubliés
-  else if(d.v===4&&d.pedits)for(let k=NEWP0;k<SUNP;k++)delete d.pedits[k];
+  migrateSave(d);
   const f=freshState(d.seed,d.mode);
   S=Object.assign(f,{inv:d.inv||f.inv,hotbar:d.hotbar||f.hotbar,sel:d.sel||0,stats:Object.assign(f.stats,d.stats||{}),tier:d.tier||1,jet:d.jet||1,eng:d.eng||1,
     fuel:typeof d.fuel==='number'?d.fuel:60,fuelMax:d.fuelMax||100,done:d.done||{},hyp:d.hyp||1,visited:d.visited||{0:1},pedits:d.pedits||{},sv:d.sv||{hp:100,o2:100,food:100},o2max:d.o2max||100,suit:!!d.suit,inter:!!d.inter,
     laser:d.laser||0,armor:!!d.armor,ms:d.ms||null,colonies:d.colonies||{},beaten:d.beaten||{},alienT:typeof d.alienT==='number'?d.alienT:420,
-    th:d.th||{},met:d.met||{},made:d.made||{gal:[],sys:[],pl:[]},pets:d.pets||[],sunShield:!!d.sunShield,relat:!!d.relat,grav:!!d.grav,sunSys:typeof d.sunSys==='number'?d.sunSys:-1,npcT:d.npcT||{},cal:d.cal||{d:0,ph:.3},job:d.job||null,req:d.req||null,helped:d.helped||{}});
+    th:d.th||{},met:d.met||{},made:d.made||{gal:[],sys:[],pl:[]},pets:d.pets||[],sunShield:!!d.sunShield,relat:!!d.relat,grav:!!d.grav,sunSys:typeof d.sunSys==='number'?d.sunSys:-1,vortex:!!d.vortex,bhFrom:typeof d.bhFrom==='number'?d.bhFrom:0,bhSys:typeof d.bhSys==='number'?d.bhSys:-1,npcT:d.npcT||{},cal:d.cal||{d:0,ph:.3},job:d.job||null,req:d.req||null,helped:d.helped||{}});
   rebuildMade();let pl=PLANETS[d.planet|0]?d.planet|0:0;if(pl===SUNP){if(SYSTEMS[S.sunSys])setSunTarget(S.sunSys);else pl=0;}
+  if(pl===VIDEP){if(SYSTEMS[S.bhSys])setVideTarget(S.bhSys);else pl=0;}
   if(!d.pedits&&d.edits)S.pedits[0]=d.edits;
   // version 3 : les paysages dépendent maintenant de leur soleil, seules les constructions de Balis sont gardées
   if((d.v||1)<3){const b0=S.pedits[0];S.pedits={};if(b0)S.pedits[0]=b0;S.inv[ID.ration]=(S.inv[ID.ration]||0)+4;}
@@ -1804,11 +1768,23 @@ function loadGame(d){
   setSafe();
   markAll(pos.x,pos.y,pos.z);
 }
+/* Les numéros des planètes, systèmes et galaxies ont changé selon les versions :
+   version 20 (v ≤ 3) : intérieur d'étoile = 246, créations à partir de 247 · versions 21-22 (v 4-5) : 32 planètes en plus (246 à 277), intérieur d'étoile = 278.
+   Depuis la version 23 (v 6), les nouvelles galaxies sont rangées après l'intérieur d'étoile, et les créations encore après. */
+function migrateSave(d){const v=d.v||1;if(v>=6)return;
+  const newer=v>=4,mp=k=>{if(newer){if(k<SUNP)return k;if(k<SUNP+32)return -1;if(k===SUNP+32)return SUNP;return BASE_NP+(k-SUNP-33);}return k<=SUNP?k:BASE_NP+(k-SUNP-1);};
+  const mv=o=>{if(!o)return o;const r={};for(const k in o){const n=mp(+k);if(n>=0)r[n]=o[k];}return r;};
+  d.pedits=mv(d.pedits);d.visited=mv(d.visited);d.colonies=mv(d.colonies);d.beaten=mv(d.beaten);
+  for(const k in d.colonies||{}){const c=d.colonies[k];if(c&&typeof c.from==='number'){c.from=mp(c.from);if(c.from<0)delete d.colonies[k];}}
+  if(typeof d.planet==='number'){const n=mp(d.planet);d.planet=n<0?0:n;if(n<0){d.pos=null;d.ship=null;d.inShip=false;}}
+  const sm=k=>k>=NS0?BASE_NS+(k-NS0):k,gm=k=>k>=NG0?BASE_NG+(k-NG0):k;
+  if(d.made){for(const o of d.made.sys||[])o.gal=gm(o.gal);for(const o of d.made.pl||[]){o.sys=sm(o.sys);if(!KINDS[o.kind])o.kind='rouge';}}
+  if(typeof d.sunSys==='number'&&d.sunSys>=0)d.sunSys=sm(d.sunSys);}
 function readSave(){try{const t=localStorage.getItem(SAVE_KEY);return t?JSON.parse(t):null;}catch(e){return null;}}
 function save(silent){
   if(!S)return;
   try{S.pedits[PI_CUR]=planetEditsArray();
-    localStorage.setItem(SAVE_KEY,JSON.stringify({v:5,seed:S.seed,mode:S.mode,inv:S.inv,hotbar:S.hotbar,sel:S.sel,stats:S.stats,tier:S.tier,jet:S.jet,eng:S.eng,hyp:S.hyp,sv:S.sv,o2max:S.o2max,suit:S.suit,inter:S.inter,laser:S.laser,armor:S.armor,ms:S.ms,colonies:S.colonies,beaten:S.beaten,alienT:S.alienT,th:S.th,met:S.met,made:S.made,pets:S.pets,sunShield:S.sunShield,relat:S.relat,grav:S.grav,sunSys:S.sunSys,oubl:1,npcT:S.npcT,cal:S.cal,job:S.job,req:S.req,helped:S.helped,fuel:S.fuel,fuelMax:S.fuelMax,done:S.done,
+    localStorage.setItem(SAVE_KEY,JSON.stringify({v:6,vortex:S.vortex,bhFrom:S.bhFrom,bhSys:S.bhSys,seed:S.seed,mode:S.mode,inv:S.inv,hotbar:S.hotbar,sel:S.sel,stats:S.stats,tier:S.tier,jet:S.jet,eng:S.eng,hyp:S.hyp,sv:S.sv,o2max:S.o2max,suit:S.suit,inter:S.inter,laser:S.laser,armor:S.armor,ms:S.ms,colonies:S.colonies,beaten:S.beaten,alienT:S.alienT,th:S.th,met:S.met,made:S.made,pets:S.pets,sunShield:S.sunShield,relat:S.relat,grav:S.grav,sunSys:S.sunSys,oubl:1,npcT:S.npcT,cal:S.cal,job:S.job,req:S.req,helped:S.helped,fuel:S.fuel,fuelMax:S.fuelMax,done:S.done,
       pos:[pos.x,pos.y,pos.z],yaw,pitch,ship:[sh.x,sh.y,sh.z,sh.yaw],inShip,cam:camMode,planet:PI_CUR,visited:S.visited,pedits:S.pedits}));
     if(!silent)toast('Partie sauvegardée dans ce navigateur.',2200,true);
   }catch(err){if(!silent)toast('Sauvegarde impossible : ce navigateur bloque le stockage local.');}
@@ -2055,7 +2031,8 @@ function drawShip(dt){
 }
 
 /* ================= Voyage entre les planètes ================= */
-const jumpCost=i=>{const c=PLANETS[i].gal!==P.gal?(S.relat?30:60):(S.relat?5:S.hyp>=2?10:20);return S.ms&&S.ms.hyp&&!inShip&&inMS()?Math.ceil(c/2):c;};
+const isPar=g=>!!(GALAXIES[g]&&GALAXIES[g].par),parJump=i=>isPar(PLANETS[i].gal)!==isPar(P.gal);
+const jumpCost=i=>{const c=parJump(i)?40:PLANETS[i].gal!==P.gal?(S.relat?30:60):(S.relat?5:S.hyp>=2?10:20);return S.ms&&S.ms.hyp&&!inShip&&inMS()?Math.ceil(c/2):c;};
 let mapOpen=false,mapSel=-1,mapSys=-1,mapGal=0,mapFilter='all',mapHover=null,warp=null,mapHits=[];
 let labOpen=false,talkOpen=false;
 const uiOpen=()=>panelOpen||mapOpen||labOpen||talkOpen;
@@ -2089,6 +2066,7 @@ function swapPlanet(i,fromMS){
   const fromGal=P.gal,rel=fromMS&&MSB?[pos.x-MSB.x0,pos.y-MSB.y0,pos.z-BASE.z]:null;
   S.pedits[PI_CUR]=planetEditsArray();
   if(i===SUNP&&warp&&warp.sunSys!=null){S.pedits[SUNP]=[];setSunTarget(warp.sunSys);}
+  if(i===VIDEP)S.pedits[VIDEP]=[];
   for(const f of fallers)scene.remove(f.o);fallers.length=0;
   endEvent();clearMeteors();evNext=90+Math.random()*90;
   clearChunks();enterPlanet(i);
@@ -2100,9 +2078,11 @@ function swapPlanet(i,fromMS){
     markAll(sh.x,sh.y,sh.z);}
   const first=!S.visited[i];S.visited[i]=1;
   if(P.imag&&first)S.stats.imag=(S.stats.imag||0)+1;
-  if(P.rogue)S.stats.rogue=1;if(P.gal===1)S.stats.lost=1;
-  if(P.gal!==fromGal){bigText(GALAXIES[P.gal].name,2.6);setTimeout(()=>{if(PI_CUR===i)bigText(P.name,2.4);},2600);}else bigText(P.name,2.6);
-  const where=P.parent>=0?P.role:P.rogue?'planète errante, sans soleil':SYSTEMS[P.sys].name;
+  if(P.rogue&&!P.vide)S.stats.rogue=1;if(P.gal===1)S.stats.lost=1;if(P.par)S.stats.par=1;
+  if(P.vide){S.stats.bh=1;inShip=false;parkShip();pos.x=BASE.x+.5;pos.y=BASE.y+.02;pos.z=BASE.z+6.5;vel.x=vel.y=vel.z=0;setSafe();markAll(pos.x,pos.y,pos.z);
+    setTimeout(()=>{if(PI_CUR===i)toast(thDone('neant')?'Le vide théorique… La prison de matière noire est ouverte : tu as déjà résolu la théorie du néant. Décolle quand tu veux !':'Au fond du trou noir, il n’y a… rien : c’est le vide théorique. Une prison de matière noire violette t’enferme ! Pour t’échapper, résous la théorie du néant (touche B, ou le terminal violet). Attention : elle est extra dure.',9000);},2800);}
+  if(P.vide)bigText('Le vide théorique',2.6);else if(P.gal!==fromGal){bigText(GALAXIES[P.gal].name,2.6);setTimeout(()=>{if(PI_CUR===i)bigText(P.name,2.4);},2600);}else bigText(P.name,2.6);
+  const where=P.vide?'au fond d’un trou noir':P.parent>=0?P.role:P.rogue?'planète errante, sans soleil':SYSTEMS[P.sys].name;
   toast((first?'Nouvelle découverte ! ':'De retour sur '+P.name+'. ')+P.label+' ('+where+') · gravité '+fmtG(P.g)+' · '+tempBand(P.temp).toLowerCase()+(P.air?' · air respirable':' · pas d’air')+(rel?'. Le téléporteur violet te dépose au sol.':'. Maj pour descendre.'),6500,true);
   if(P.halloween&&first){S.stats.halloween=1;setTimeout(()=>{if(PI_CUR===i)toast('Joyeux Halloween ! Attention aux fantômes, squelettes et sorcières…',5000);},2800);}
   if(P.sun){S.stats.sun=1;setTimeout(()=>{if(PI_CUR===i)toast('Te voilà dans le cœur d’une étoile ! Ne touche surtout pas le plasma. Les cœurs d’étoile brillent dans les îles : fore-les avec la Foreuse Mk II.',7500);},2800);}
@@ -2112,10 +2092,14 @@ function swapPlanet(i,fromMS){
   else if(P.bio===3&&!S.beaten[i])setTimeout(()=>{if(PI_CUR===i)toast('Planète extra-bio : des extraterrestres très évolués ! Détruis ses '+coreList.length+' cœurs de colonie pour vaincre leur civilisation.',7000);},2800);
   checkContracts();save(true);
 }
+const VIDE_MSG='Tu es prisonnier du vide théorique ! Aucun moteur ne marche ici. Seule la théorie du néant (touche B, ou le terminal violet) peut ouvrir la prison.';
 function jumpProblem(i){
   if(i===PI_CUR)return 'Tu es déjà ici.';
+  if(P.vide&&!thDone('neant'))return VIDE_MSG;
+  if(PLANETS[i].vide)return 'On ne peut entrer dans le vide théorique qu’en plongeant dans un trou noir.';
   const other=PLANETS[i].gal!==P.gal;
-  if(other&&S.mode!=='libre'&&!S.inter)return 'Pour aller dans '+GALAXIES[PLANETS[i].gal].name+', installe le Moteur intergalactique à l’atelier (il faut des météorites).';
+  if(parJump(i)&&S.mode!=='libre'&&!S.vortex)return 'Pour passer dans l’univers parallèle (ou en revenir), il faut la Machine du vortex.';
+  if(other&&!parJump(i)&&S.mode!=='libre'&&!S.inter)return 'Pour aller dans '+GALAXIES[PLANETS[i].gal].name+', installe le Moteur intergalactique à l’atelier (il faut des météorites).';
   if(!inShip&&!inMS())return 'Monte dans ta fusée (V) et décolle jusqu’à l’espace pour sauter'+(S.ms?', ou entre dans ton vaisseau-mère (téléporteur violet près de la balise).':'.');
   if(inShip&&gravAt(sh.y)>0)return 'Monte encore : l’hyperpropulseur ne marche qu’en apesanteur, au-dessus de l’altitude '+GTOP+'.';
   if(S.mode!=='libre'&&S.fuel<jumpCost(i))return 'Pas assez de carburant : il faut '+jumpCost(i)+' unités (fais le plein à l’atelier).';
@@ -2127,6 +2111,7 @@ function startWarp(i){
   closeMap();warp={t:0,to:i,swapped:false,ms:!inShip&&inMS()};
   const w=$('#warp');w.hidden=true;void w.offsetWidth;w.hidden=false;
   tone(120,1.3,'sawtooth',.05,8);setTimeout(()=>tone(1400,.9,'sine',.05,.2),1250);
+  if(parJump(i))bigText('Vortex !',1.2);
 }
 function updateWarp(dt){
   if(!warp)return;warp.t+=dt;
@@ -2137,7 +2122,7 @@ function updateWarp(dt){
 const mapCv=$('#mapCv'),mapCtx=mapCv.getContext('2d');
 function mapMatch(Pl){return mapFilter==='all'||(mapFilter==='imag'&&Pl.imag)||(mapFilter==='new'&&!S.visited[Pl.i])||(mapFilter==='bio'&&(Pl.bio>0||Pl.halloween||Pl.oubliee||!!S.colonies[Pl.i]));}
 function sysMatch(s){return s.bodies.some(j=>mapMatch(PLANETS[j])||PLANETS[j].moonIds.some(m=>mapMatch(PLANETS[m])));}
-const visitedN=g=>PLANETS.filter(p=>!p.sun&&p.gal===g&&S.visited[p.i]).length;
+const visitedN=g=>PLANETS.filter(p=>!p.sun&&!p.vide&&p.gal===g&&S.visited[p.i]).length;
 const mapStars=[null,null];
 function drawMap(){
   const r=mapCv.parentElement.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
@@ -2153,28 +2138,33 @@ function drawMap(){
   // triangles : rouge = colonisée, vert = extra-bio, orange = Halloween
   const MKC={col:'#ff5a5a',civ:'#7dff6a',hal:'#ff9a3a'};
   const amark=(x,y,s,k)=>{if(!s)return;g.fillStyle=MKC[s];const r=(k||5)*dpr;g.beginPath();g.moveTo(x,y-r);g.lineTo(x+r,y+r*.75);g.lineTo(x-r,y+r*.75);g.closePath();g.fill();};
+  // trou noir : un disque orange autour d'un centre noir · trou de ver : des anneaux bleus · trou blanc : un cœur blanc éblouissant
+  const holeMark=(x,y,st,k)=>{if(!st.special)return;g.lineWidth=1.5*dpr*k;
+    if(st.bh){g.strokeStyle='rgba(255,160,70,.9)';g.beginPath();g.ellipse(x,y,9*dpr*k,3.2*dpr*k,-.25,0,Math.PI*2);g.stroke();g.fillStyle='#000';g.beginPath();g.arc(x,y,3.6*dpr*k,0,Math.PI*2);g.fill();}
+    else if(st.ver){for(const r of [3,6,9]){g.strokeStyle='rgba(106,240,255,'+(1-r/12)+')';g.beginPath();g.arc(x,y,r*dpr*k,0,Math.PI*2);g.stroke();}}
+    else{g.fillStyle='#fff';g.beginPath();g.arc(x,y,4*dpr*k,0,Math.PI*2);g.fill();}};
   const sysState=sy=>{let best='';for(const j of sy.bodies)for(const q of [j,...PLANETS[j].moonIds]){const s=alienState(PLANETS[q]);if(s==='col')return s;if(s==='civ'||(s&&!best))best=s;}return best;};
   if(mapSys<0){
     const nebCol=GALAXIES[mapGal].neb||(mapGal===1?['rgba(255,110,170,.22)','rgba(90,255,200,.1)']:['rgba(255,190,120,.22)','rgba(120,80,190,.12)']);
     const gr=g.createRadialGradient(cx,cy,0,cx,cy,s*1.05);gr.addColorStop(0,nebCol[0]);gr.addColorStop(.4,nebCol[1]);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);
     if(!mapStars[mapGal]){const R=mulberry32(9+mapGal);const a0=[];for(let k=0;k<700;k++){const t=R(),arm=k%3,rr=Math.sqrt(t),a=arm*Math.PI*2/3+rr*4.4+(R()-.5)*.9;a0.push([Math.cos(a)*rr+(R()-.5)*.12,Math.sin(a)*rr*.82+(R()-.5)*.12,R()]);}mapStars[mapGal]=a0;}
     for(const [x,y,b] of mapStars[mapGal]){g.fillStyle='rgba(220,230,255,'+(.12+b*.3).toFixed(2)+')';const q=dpr*(b>.85?2:1);g.fillRect(cx+x*s,cy+y*s,q,q);}
-    for(const sy of SYSTEMS){if(sy.gal!==mapGal)continue;const x=cx+sy.x*s,y=cy+sy.y*s,st=STARS[sy.star],ok=sysMatch(sy);
-      g.globalAlpha=ok?1:.2;glow(x,y,(9+st.size*5)*dpr,st.col);g.globalAlpha=1;
+    for(const sy of SYSTEMS){if(sy.gal!==mapGal)continue;const x=cx+sy.x*s,y=cy+sy.y*s,st=STARS[sy.star],ok=sysMatch(sy)||!!st.special;
+      g.globalAlpha=ok?1:.2;glow(x,y,(9+st.size*5)*dpr,st.col);g.globalAlpha=1;holeMark(x,y,st,1);
       if(sy.bodies.some(j=>S.visited[j]))ring(x,y,6,'rgba(255,255,255,.65)',1);
       amark(x+11*dpr,y-11*dpr,sysState(sy),4.5);
       mapHits.push({x,y,r:16*dpr,t:'sys',i:sy.i});}
-    for(const p of PLANETS){if(p.gal!==mapGal||!p.rogue)continue;const x=cx+p.mx*s,y=cy+p.my*s;sq(x,y,6*dpr,p.mapCol,mapMatch(p)?.8:.15,S.visited[p.i]);amark(x,y-11*dpr,alienState(p),4);mapHits.push({x,y,r:14*dpr,t:'body',i:p.i});}
+    for(const p of PLANETS){if(p.gal!==mapGal||!p.rogue||p.vide)continue;const x=cx+p.mx*s,y=cy+p.my*s;sq(x,y,6*dpr,p.mapCol,mapMatch(p)?.8:.15,S.visited[p.i]);amark(x,y-11*dpr,alienState(p),4);mapHits.push({x,y,r:14*dpr,t:'body',i:p.i});}
     // ici
     if(P.gal===mapGal){const x=P.rogue?cx+P.mx*s:cx+SYSTEMS[P.sys].x*s,y=P.rogue?cy+P.my*s:cy+SYSTEMS[P.sys].y*s;ring(x,y,10,'#74e0b5',2);label(x,y,'Tu es ici · '+P.name,'#74e0b5');}
-    if(mapHover){const o=mapHover;if(o.t==='sys'){const sy=SYSTEMS[o.i];label(cx+sy.x*s,cy+sy.y*s,sy.name+' · '+sy.bodies.length+' planètes','#e4eaf4');}else{const p=PLANETS[o.i];label(cx+p.mx*s,cy+p.my*s,p.name+' · errante','#e4eaf4');}}
+    if(mapHover){const o=mapHover;if(o.t==='sys'){const sy=SYSTEMS[o.i];label(cx+sy.x*s,cy+sy.y*s,sy.name+' · '+(STARS[sy.star].special?STARS[sy.star].label.toLowerCase():sy.bodies.length+' planètes'),'#e4eaf4');}else{const p=PLANETS[o.i];label(cx+p.mx*s,cy+p.my*s,p.name+' · errante','#e4eaf4');}}
     if(mapSel>=0&&PLANETS[mapSel].rogue&&PLANETS[mapSel].gal===mapGal){const p=PLANETS[mapSel];ring(cx+p.mx*s,cy+p.my*s,9,'#ffb547',2);label(cx+p.mx*s,cy+p.my*s,p.name,'#ffb547');}
   }else{
     const sy=SYSTEMS[mapSys],st=STARS[sy.star];
-    const maxO=Math.max(...sy.bodies.map(j=>PLANETS[j].orbit));
+    const maxO=Math.max(1,...sy.bodies.map(j=>PLANETS[j].orbit));
     const sw=Math.min(w*.46,h*.46/.62);
     glow(cx,cy,(26+st.size*14)*dpr,st.col);if(st.double)glow(cx+18*dpr,cy-8*dpr,22*dpr,'#ffb8a0');
-    g.fillStyle='#fff';g.fillRect(cx-5*dpr,cy-5*dpr,10*dpr,10*dpr);
+    if(st.special)holeMark(cx,cy,st,3);else{g.fillStyle='#fff';g.fillRect(cx-5*dpr,cy-5*dpr,10*dpr,10*dpr);}
     mapHits.push({x:cx,y:cy,r:24*dpr,t:'star',i:sy.i});
     const ox=k=>(k+.55)/(maxO+.8)*sw;
     for(const j of sy.bodies){const p=PLANETS[j],rr=ox(p.orbit);g.strokeStyle='rgba(140,152,173,.28)';g.lineWidth=dpr;g.beginPath();g.ellipse(cx,cy,rr,rr*.62,0,0,Math.PI*2);g.stroke();}
@@ -2192,7 +2182,7 @@ function drawMap(){
     const sp=mapSel>=0?PLANETS[mapSel]:null;if(at(sp)&&sp.i!==PI_CUR){ring(sp._mx,sp._my,11,'#ffb547',2);label(sp._mx,sp._my,sp.name,'#ffb547');}
   }
   $('#mapBack').hidden=mapSys<0;
-  $('#mapCount').textContent=GALAXIES[mapGal].name+' · visités : '+visitedN(mapGal)+' / '+PLANETS.filter(p=>!p.sun&&p.gal===mapGal).length;
+  $('#mapCount').textContent=GALAXIES[mapGal].name+' · visités : '+visitedN(mapGal)+' / '+PLANETS.filter(p=>!p.sun&&!p.vide&&p.gal===mapGal).length;
 }
 const bodyBtn=(j)=>{const p=PLANETS[j];return '<button type="button" class="pbtn" data-j="'+j+'"><i style="background:'+p.mapCol+'"></i>'+p.name+(S.visited[j]?' ✓':'')+'</button>';};
 function renderMapInfo(){
@@ -2207,7 +2197,7 @@ function renderMapInfo(){
       '<dt>Climat</dt><dd>'+tempBand(p.temp)+'</dd>'+
       '<dt>Gravité</dt><dd>'+fmtG(p.g)+'</dd>'+
       '<dt>Air</dt><dd>'+(p.air?'<span class="ok">Respirable</span>':'Pas d’air : surveille l’oxygène')+'</dd>'+
-      '<dt>Jour</dt><dd>'+(p.locked?'Jamais de lever ni de coucher : l’étoile reste immobile':p.day?p.day+' minutes de jeu':p.oubliee?'Une lumière verte, toujours la même, sous le dôme':'Jamais de jour')+'</dd>'+
+      '<dt>Jour</dt><dd>'+(p.day?p.day+' minutes de jeu':p.oubliee?'Une lumière verte, toujours la même, sous le dôme':'Jamais de jour')+'</dd>'+
       '<dt>Vie</dt><dd>'+bioLine(p)+'</dd>'+
       '<dt>Lunes</dt><dd>'+(p.moonIds.length?p.moonIds.length+' à visiter':p.deco?p.deco+' (trop petites pour s’y poser)':'Aucune')+(p.moonsN&&st?' · éclipses possibles':'')+'</dd>'+
       '<dt>Statut</dt><dd>'+(here?'<span class="ok">Tu es ici</span>':S.visited[p.i]?'Déjà visité':'Jamais visité')+'</dd></dl>'+
@@ -2219,24 +2209,31 @@ function renderMapInfo(){
   }else if(mapSys>=0){
     const sy=SYSTEMS[mapSys],st=STARS[sy.star];
     html='<div class="pi-head"><span class="star-ico" style="background:'+st.col+';box-shadow:0 0 18px '+st.col+'"></span><div><div class="eyebrow">'+st.label+(st.double?' (deux soleils)':'')+'</div><h3>'+sy.name+'</h3></div></div>'+
+      (st.ver||st.blanc?(()=>{const why=spaceWhy(sy.gal,0),t=st.ver?SYSTEMS[sy.twin]:null;
+        return '<p class="pi-desc">'+(st.ver?'Un trou de ver est un tunnel à travers l’espace, prévu par les équations d’Einstein : on entre d’un côté et on ressort aussitôt très loin, sans dépenser de carburant. Celui-ci mène dans '+GALAXIES[t.gal].name+'.':'Un trou blanc, c’est l’inverse d’un trou noir : rien ne peut y entrer, il rejette tout ce qui s’approche. Si tu t’approches, il te projettera très loin, dans une autre galaxie, au hasard !')+'</p>'+
+          '<button id="holeBtn" class="btn primary" type="button"'+(why?' disabled':'')+'>'+(st.ver?'Traverser le trou de ver':'S’approcher du trou blanc')+'</button><p class="hint">'+(why||(st.ver?'Prêt ! Accroche-toi…':'Prêt ? Attention, ça va secouer !'))+'</p>';})():
+      st.bh?(()=>{const why=sunProblem(sy.i);return '<p class="pi-desc">Un trou noir est une masse si énorme et si serrée que même la lumière ne peut pas en sortir. On dit qu’au fond, il n’y a rien : le vide théorique… Ceux qui y plongent n’en reviennent qu’en résolvant la théorie du néant.</p>'+
+          '<button id="sunBtn" class="btn primary" type="button"'+(why?' disabled':'')+'>Plonger dans le trou noir'+(S.mode==='libre'?'':' · 20 carburant')+'</button><p class="hint" id="sunWhy">'+(why||'Prêt… si tu oses ! Une fois au fond, impossible de repartir sans la théorie du néant.')+'</p>';})():
       '<p class="pi-desc">'+(sy.real?'Notre Système solaire, avec le Soleil, la Terre et Jupiter. ':'')+'Une étoile est une boule de feu géante. Elle éclaire et réchauffe ses planètes : tout près il fait brûlant, très loin tout gèle.</p>'+
-      (()=>{const why=sunProblem(sy.i);return '<button id="sunBtn" class="btn primary" type="button"'+(why?' disabled':'')+'>Plonger dans l’étoile'+(S.mode==='libre'?'':' · 30 carburant')+'</button><p class="hint" id="sunWhy">'+(why||'Prêt ! Le Bouclier solaire protège Ballis : direction le cœur de l’étoile.')+'</p>';})()+
-      '<div class="pi-list"><div class="cat-label">Planètes, de la plus proche à la plus lointaine</div>'+sy.bodies.slice().sort((a,b)=>PLANETS[a].orbit-PLANETS[b].orbit).map(bodyBtn).join('')+'</div>';
+      (()=>{const why=sunProblem(sy.i);return '<button id="sunBtn" class="btn primary" type="button"'+(why?' disabled':'')+'>Plonger dans l’étoile'+(S.mode==='libre'?'':' · 30 carburant')+'</button><p class="hint" id="sunWhy">'+(why||'Prêt ! Le Bouclier solaire protège Ballis : direction le cœur de l’étoile.')+'</p>';})())+
+      (sy.bodies.length?'<div class="pi-list"><div class="cat-label">Planètes, de la plus proche à la plus lointaine</div>'+sy.bodies.slice().sort((a,b)=>PLANETS[a].orbit-PLANETS[b].orbit).map(bodyBtn).join('')+'</div>':'');
   }else{
-    const G0=GALAXIES[mapGal],ns=SYSTEMS.filter(s=>s.gal===mapGal).length,all=PLANETS.filter(p=>!p.sun&&p.gal===mapGal);
+    const G0=GALAXIES[mapGal],ns=SYSTEMS.filter(s=>s.gal===mapGal).length,all=PLANETS.filter(p=>!p.sun&&!p.vide&&p.gal===mapGal);
     html='<div class="pi-head"><div><div class="eyebrow">Galaxie</div><h3>'+G0.name+'</h3></div></div><p class="pi-desc">'+G0.desc+'</p>'+
       '<dl class="pi-stats"><dt>Étoiles</dt><dd>'+ns+' systèmes</dd><dt>Planètes</dt><dd>'+all.filter(p=>p.parent<0&&!p.rogue).length+'</dd><dt>Lunes</dt><dd>'+all.filter(p=>p.parent>=0).length+'</dd><dt>Errantes</dt><dd>'+all.filter(p=>p.rogue).length+' (sans soleil)</dd><dt>Visités</dt><dd>'+visitedN(mapGal)+' / '+all.length+'</dd></dl>'+
       '<p class="hint">Clique une étoile pour voir son système solaire. Les petits carrés seuls sont des planètes errantes.'+(mapGal!==P.gal&&!S.inter&&S.mode!=='libre'?' Pour venir ici, il faut le Moteur intergalactique.':'')+'</p>'+
       (()=>{const cols=activeColonies().filter(j=>PLANETS[j].gal===mapGal),cv=civs().filter(p=>p.gal===mapGal);
         return (cols.length?'<div class="pi-list"><div class="cat-label">Planètes colonisées par les extraterrestres</div>'+cols.map(bodyBtn).join('')+'</div>':'')+
           (cv.length?'<div class="pi-list"><div class="cat-label">Planètes extra-bio (extraterrestres évolués)</div>'+cv.map(p=>bodyBtn(p.i)).join('')+'</div>':'');})()+
-      (mapGal===0?'<div class="pi-list"><div class="cat-label">Exoplanètes réalistes</div>'+EXO_NAMED.map(j=>bodyBtn(j).replace('</i>','</i>'+KINDS[PLANETS[j].kind].label+' · ')).join('')+'</div>'+
-        '<div class="pi-list"><div class="cat-label">Raccourcis</div>'+bodyBtn(HALLO)+bodyBtn(OUBL)+'<button type="button" class="pbtn" data-s="'+SYSTEMS.findIndex(s=>s.real)+'"><i style="background:#fff1c8"></i>Système solaire (Terre, Jupiter…)</button><button type="button" class="pbtn" data-s="0"><i style="background:#ffc890"></i>Système de Balis</button></div>':'');
+      (mapGal===0?'<div class="pi-list"><div class="cat-label">Raccourcis</div>'+bodyBtn(HALLO)+bodyBtn(OUBL)+'<button type="button" class="pbtn" data-s="'+SYSTEMS.findIndex(s=>s.real)+'"><i style="background:#fff1c8"></i>Système solaire (Terre, Jupiter…)</button><button type="button" class="pbtn" data-s="0"><i style="background:#ffc890"></i>Système de Balis</button>'+
+        SYSTEMS.filter(q=>q.gal===0&&STARS[q.star].special).map(q=>'<button type="button" class="pbtn" data-s="'+q.i+'"><i style="background:'+STARS[q.star].col+'"></i>'+q.name+'</button>').join('')+'</div>':
+        '<div class="pi-list"><div class="cat-label">Trous noirs, trous de ver et trous blancs</div>'+SYSTEMS.filter(q=>q.gal===mapGal&&STARS[q.star].special).map(q=>'<button type="button" class="pbtn" data-s="'+q.i+'"><i style="background:'+STARS[q.star].col+'"></i>'+q.name+'</button>').join('')+'</div>');
   }
   el.innerHTML=html;
   el.querySelectorAll('.pbtn').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.s!==undefined){openSystem(+b.dataset.s);return;}const j=+b.dataset.j;const p=PLANETS[j];if(p.sys>=0)mapSys=p.sys;selectPlanet(j);}));
   const jb=$('#jumpBtn');if(jb)jb.addEventListener('click',()=>startWarp(mapSel));
   const sb=$('#sunBtn');if(sb)sb.addEventListener('click',()=>startSunDive(mapSys));
+  const hb=$('#holeBtn');if(hb)hb.addEventListener('click',()=>holeUse(mapSys));
 }
 function setGal(gi){mapGal=gi;mapSys=-1;mapSel=-1;document.querySelectorAll('.mapG').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.g===gi)));renderMapInfo();drawMap();}
 function openSystem(si){mapGal=SYSTEMS[si].gal;mapSys=si;mapSel=-1;document.querySelectorAll('.mapG').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.g===mapGal)));renderMapInfo();drawMap();}
@@ -2256,10 +2253,12 @@ mapCv.addEventListener('mousemove',e=>{const o=mapPick(e);mapCv.style.cursor=o?'
 mapCv.addEventListener('mouseleave',()=>{mapHover=null;drawMap();});
 document.querySelectorAll('.mapF').forEach(b=>b.addEventListener('click',()=>{mapFilter=b.dataset.f;
   document.querySelectorAll('.mapF').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));drawMap();}));
-function renderGalBtns(){const el=$('#mapGals');el.innerHTML=GALAXIES.map((g,k)=>'<button type="button" class="mapG" data-g="'+k+'">'+(k===1?'Galaxie perdue':esc(g.name))+'</button>').join('');
+// l'univers parallèle reste secret tant que la théorie du néant n'est pas résolue
+const parOpen=()=>!!S&&(S.vortex||thDone('neant')||!!(GALAXIES[P.gal]&&GALAXIES[P.gal].par));
+function renderGalBtns(){const el=$('#mapGals');el.innerHTML=GALAXIES.map((g,k)=>g.par&&!parOpen()?'':'<button type="button" class="mapG" data-g="'+k+'">'+(k===1?'Galaxie perdue':k===GAL_MAG?'Magellan':esc(g.name))+'</button>').join('');
   el.querySelectorAll('.mapG').forEach(b=>b.addEventListener('click',()=>setGal(+b.dataset.g)));}
 $('#mapBack').addEventListener('click',()=>{mapSys=-1;mapSel=-1;renderMapInfo();drawMap();});
-$('#mapRandom').addEventListener('click',()=>{const pool=PLANETS.filter(p=>!p.sun&&p.gal===mapGal&&p.i!==PI_CUR&&mapMatch(p));const c=pool.filter(p=>!S.visited[p.i]);const L=c.length?c:pool;if(L.length)selectPlanet(L[Math.random()*L.length|0].i);});
+$('#mapRandom').addEventListener('click',()=>{const pool=PLANETS.filter(p=>!p.sun&&!p.vide&&p.gal===mapGal&&p.i!==PI_CUR&&mapMatch(p));const c=pool.filter(p=>!S.visited[p.i]);const L=c.length?c:pool;if(L.length)selectPlanet(L[Math.random()*L.length|0].i);});
 $('#mapClose').addEventListener('click',closeMap);
 $('#btnMap').addEventListener('click',openMap);
 window.addEventListener('resize',()=>{if(mapOpen)drawMap();});
@@ -2311,7 +2310,7 @@ function updateSky(dt){
 const EVENTS={eclipse:{name:'Éclipse',dur:42},meteores:{name:'Pluie de météorites',dur:36},aurore:{name:'Aurore',dur:60},tempete:{name:'Tempête',dur:45},comete:{name:'Comète',dur:30},invasion:{name:'Invasion !',dur:75}};
 let ev=null,evNext=110+Math.random()*90;const meteors=[];
 const metGeo=new THREE.BoxGeometry(.9,.9,.9),metMat=new THREE.MeshBasicMaterial({color:0x3a3040});
-function eventChoices(){const c=[];if(P.oubliee||P.sun)return c;
+function eventChoices(){const c=[];if(P.oubliee||P.sun||P.vide)return c;
   if(P.star&&P.moonsN>0&&LIT.dl>.75)c.push('eclipse','eclipse');
   if(!P.gas)c.push('meteores');
   if(P.sky&&(P.temp<-.2||P.star==='bleue'||P.gal===1)&&LIT.dl<.35)c.push('aurore','aurore');
@@ -2554,7 +2553,7 @@ function alienTick(dt){
   S.alienT-=dt;if(S.alienT>0)return;S.alienT=300+Math.random()*240;
   const src=civs();if(!src.length||activeColonies().length>=10)return;
   const from=src[Math.random()*src.length|0];
-  const pool=PLANETS.filter(p=>p.gal===from.gal&&p.i!==0&&p.i!==PI_CUR&&!p.gas&&!p.halloween&&!p.oubliee&&p.bio<3&&!S.colonies[p.i]);if(!pool.length)return;
+  const pool=PLANETS.filter(p=>p.gal===from.gal&&p.i!==0&&p.i!==PI_CUR&&!p.gas&&!p.halloween&&!p.oubliee&&!p.vide&&p.bio<3&&!S.colonies[p.i]);if(!pool.length)return;
   const near=pool.filter(p=>p.sys>=0&&p.sys===from.sys),L=near.length&&Math.random()<.5?near:pool;
   const to=L[Math.random()*L.length|0];S.colonies[to.i]={from:from.i,freed:false};
   bigText('Alerte extraterrestre !',2);
@@ -2987,6 +2986,19 @@ const THEO=[
     ['Pourquoi pense-t-on qu’il existe de la matière noire ?','Les galaxies tournent trop vite pour la seule matière visible','On la voit briller la nuit','Elle cache le Soleil pendant les éclipses','Elle colore les nébuleuses','Sans une masse invisible en plus, les étoiles du bord des galaxies s’envoleraient.'],
     ['Quelle grande galaxie rencontrera un jour la Voie lactée ?','Andromède','Le Petit Nuage de Magellan','La galaxie du Tourbillon','Aucune','Dans environ 4 à 5 milliards d’années, les deux galaxies se mélangeront.'],
     ['Quel âge a l’Univers, environ ?','13,8 milliards d’années','4,6 milliards d’années','6 000 ans','1 000 milliards d’années','Le Big Bang a eu lieu il y a environ 13,8 milliards d’années.']]}];
+THEO.push({id:'neant',name:'Théorie du néant',dom:'neant',hard:1,unlock:'t’échapper du vide théorique et construire la Machine du vortex, qui ouvre l’univers parallèle',q:[
+  ['Selon la physique quantique, le vide est-il vraiment vide ?','Non : des particules virtuelles y apparaissent et disparaissent sans cesse','Oui : il n’y a absolument rien','Il est rempli d’air très léger','Il est rempli d’éther lumineux','On appelle ça les fluctuations quantiques du vide : le « rien » bouillonne toujours un peu.'],
+  ['Comment s’appelle la frontière d’un trou noir, d’où même la lumière ne peut plus sortir ?','L’horizon des événements','La sphère de Hill','L’héliopause','La ceinture de Kuiper','Une fois passé l’horizon des événements, plus rien ne peut ressortir, pas même la lumière.'],
+  ['Qu’est-ce que Stephen Hawking a prédit pour les trous noirs ?','Ils émettent un faible rayonnement et s’évaporent très lentement','Ils n’émettent jamais rien','Ils brillent plus que toutes les étoiles','Ils font un bruit très fort','C’est le rayonnement de Hawking : un trou noir perd de la masse, mais si lentement qu’il faut des milliards de milliards d’années.'],
+  ['Quelle expérience montre que le vide peut pousser deux plaques de métal l’une vers l’autre ?','L’effet Casimir','L’effet Doppler','L’effet de serre','L’effet Coriolis','Hendrik Casimir l’a prédit en 1948, et on l’a mesuré pour de vrai en 1997.'],
+  ['Que dit le principe d’incertitude de Heisenberg ?','On ne peut pas connaître parfaitement à la fois la position et la vitesse d’une particule','Les scientifiques ne sont jamais sûrs de rien','Une particule ne bouge jamais','La lumière n’a pas de vitesse précise','Plus on connaît précisément l’une, moins on connaît l’autre. C’est une loi de la nature, pas un défaut des instruments.'],
+  ['Quelle part de l’Univers est faite de matière ordinaire (les atomes) ?','Environ 5 %','Environ 95 %','Environ 50 %','Exactement 100 %','Le reste, c’est environ 27 % de matière noire et 68 % d’énergie noire, qu’on ne sait pas encore expliquer.'],
+  ['Comment appelle-t-on la mystérieuse énergie qui accélère l’expansion de l’Univers ?','L’énergie noire','La matière noire','L’énergie nucléaire','L’antimatière','On l’a découverte en 1998 en observant des étoiles qui explosent très loin : l’Univers grandit de plus en plus vite.'],
+  ['Quelle est la température de la plus vieille lumière de l’Univers, le fond diffus cosmologique ?','Environ −270 °C (2,7 kelvins)','Environ 0 °C','Environ 1 000 °C','Environ 5 500 °C','Cette lumière date d’environ 380 000 ans après le Big Bang. Elle s’est refroidie pendant 13,8 milliards d’années.'],
+  ['Que se passe-t-il quand une particule rencontre son antiparticule ?','Elles disparaissent toutes les deux en énergie (de la lumière)','Elles rebondissent','Elles se collent pour toujours','Rien du tout','C’est l’annihilation : toute leur masse devient de l’énergie, selon E = mc².'],
+  ['Qu’est-ce que le zéro absolu ?','La température la plus basse possible : −273,15 °C','La température de l’eau qui gèle','La température de l’espace près du Soleil','Une température qui n’existe pas','On peut s’en approcher dans les laboratoires, mais jamais l’atteindre tout à fait.'],
+  ['Qu’y a-t-il au centre d’un trou noir, selon la relativité générale ?','Une singularité, où la densité deviendrait infinie','Une étoile cachée','Un autre soleil','Une planète de glace','Les physiciens pensent qu’il faudra une nouvelle théorie, la gravité quantique, pour comprendre ce qui s’y passe vraiment.'],
+  ['Qu’est-ce qu’un trou blanc, en théorie ?','L’inverse d’un trou noir : il rejette la matière au lieu de l’avaler','Un trou noir peint en blanc','Une étoile morte toute blanche','Un nuage de neige dans l’espace','Les équations de la relativité permettent les trous blancs, mais personne n’en a jamais observé un.']]});
 const THEO_BY={};for(const t of THEO)THEO_BY[t.id]=t;
 const DOMN={vie:'la vie et l’ADN',chimie:'la chimie',gravite:'la gravité',relat:'la relativité',etoile:'les étoiles',planete:'les planètes',galaxie:'les galaxies'};
 function thSt(id){if(!S.th[id])S.th[id]={n:0,done:false};return S.th[id];}
@@ -3742,11 +3754,76 @@ function cuddlePet(p){for(let k=0;k<10;k++)puff(p.x,p.y+p.T.h+.2,p.z,k%2?'#ff7ab
 const SUNP=(function addSunInside(){const T=KINDS.soleil;
   const p=Object.assign({},T,{trees:[],i:PLANETS.length,kind:'soleil',name:'Intérieur d’étoile',sun:true,gal:0,sys:0,orbit:0,orbitR:.2,ang:0,parent:-1,moonIds:[],
     star:'jaune',rogue:false,temp:1,bright:1.2,day:0,air:false,deco:0,moonsN:0,role:'Étoile',mapCol:'#ffb050',bio:0,flux:4});PLANETS.push(p);return p.i;})();
+/* --- Version 23 : deux nouvelles galaxies, l'univers parallèle, les trous noirs, de ver et blancs, et le vide théorique ---
+   Tout est rangé après l'intérieur d'étoile : les planètes, systèmes et galaxies créés à la table d'ADNisation viennent ensuite. */
+const NP0=PLANETS.length,NS0=SYSTEMS.length,NG0=GALAXIES.length;
+GALAXIES.push({name:'Andromède',desc:'La grande galaxie voisine de la Voie Lactée, encore plus grande qu’elle. Au centre se cache un trou noir géant, M31*. Pour y aller, il faut le Moteur intergalactique… ou un trou de ver !',neb:['rgba(170,200,255,.22)','rgba(255,170,120,.1)']},
+  {name:'Grand Nuage de Magellan',desc:'Une petite galaxie irrégulière, sans bras en spirale, qui tourne autour de la Voie Lactée. Ses étoiles sont souvent jeunes et bleues.',neb:['rgba(140,220,255,.2)','rgba(200,140,255,.1)']},
+  {name:'Univers parallèle',par:true,desc:'Un univers qui ressemble au nôtre, comme dans un miroir : les planètes portent leurs noms à l’envers et leurs ciels ont des couleurs inversées. On n’y va que par la Machine du vortex.',neb:['rgba(200,90,255,.24)','rgba(90,255,220,.1)']});
+const GAL_AND=NG0,GAL_MAG=NG0+1,GAL_PAR=NG0+2;
+const HOLES={};
+(function addCosmos(){
+  const R=mulberry32(2323),pick=a=>a[R()*a.length|0];
+  const shf=(hexc,dh,ds,dl)=>{const c=new THREE.Color(hexc),h={};c.getHSL(h);c.setHSL((h.h+dh+1)%1,Math.max(0,Math.min(1,h.s+ds)),Math.max(.05,Math.min(.92,h.l+dl)));return '#'+c.getHexString();};
+  const used=new Set(PLANETS.map(p=>p.name));
+  const SY=['al','mi','ra','to','ze','ka','lu','nor','phe','sa','dré','vi','go','an','tes','ri','ul','ma','qe','lo'];
+  const nm=()=>{for(;;){let n=pick(SY)+pick(SY)+pick(['a','is','on','ia','ée','ar','us','ys']);n=n[0].toUpperCase()+n.slice(1);if(!used.has(n)){used.add(n);return n;}}};
+  const sys=(gal,name,star,x,y)=>{const s={i:SYSTEMS.length,gal,name,star,x,y,bodies:[]};SYSTEMS.push(s);return s;};
+  const CLIM={hot:[.35,.65],mid:[-.22,.22],cold:[-.7,-.35]};
+  const fin=(p,s)=>{const st=STARS[s.star];p.star=s.star;p.rogue=false;p.gal=s.gal;p.sys=s.i;p.parent=-1;p.moonIds=[];p.bio=0;
+    p.flux=orbitFlux(st.lum||.05,p.orbitR);if(p.temp===undefined)p.temp=fluxTemp(p.flux);
+    p.bright=Math.max(.62,Math.min(1.2,.92+.22*Math.log2(Math.max(.01,p.flux)/.5)));p.day=p.day||4+Math.round(R()*8);
+    p.air=AIRK.has(p.kind)&&!!p.sky&&p.temp<.8&&p.temp>-.8;if(!p.sky){p.cloud=null;p.air=false;}
+    p.deco=p.gas?0:(R()<.4?1:0);p.moonsN=p.deco;p.role='Planète';p.mapCol=p.gas?p.sky:BLOCKS[ID[p.top]].color;s.bodies.push(p.i);};
+  const body=(kind,s,orbit,band,name)=>{const T=KINDS[kind],st=STARS[s.star],[lo,hi]=CLIM[band];
+    const p=Object.assign({},T,{trees:T.trees.map(t=>[t[0],t[1]*(.5+R()*1.1)]),i:PLANETS.length,kind,name:name||nm(),orbit,ang:R()*Math.PI*2,
+      g:Math.round(T.g*(.65+R()*.7)*100)/100,hb:T.hb+Math.round((R()-.5)*4),ha:T.ha*(.6+R()*.8),hf:T.hf*(.75+R()*.5)});
+    if(T.sky)p.sky=shf(T.sky,(R()-.5)*.2,(R()-.5)*.2,(R()-.5)*.1);if(T.sea)p.sea=T.sea+Math.round((R()-.5)*6);if(T.craters)p.craters=Math.round(T.craters*(.5+R()));
+    p.temp=lo+R()*(hi-lo);p.orbitR=Math.sqrt(Math.max(.05,st.lum)/(.5*Math.pow(2,p.temp/.32)))/.8;
+    let d=T.desc;if(p.g<.2)d+=' Gravité très faible : sauts de géant !';else if(p.g>.55)d+=' Gravité forte : ta fusée doit forcer.';p.desc=d;
+    PLANETS.push(p);fin(p,s);return p;};
+  const fillSys=(s,n,K)=>{for(let k=0;k<n;k++){const b=R()<.25?'hot':R()<.3?'cold':'mid';body(b==='cold'&&R()<.3?'gazeuse':pick(K[b]),s,k+1,b);}};
+  const spiral=(j,n,arms)=>{const t=(j+.5)/n,arm=j%arms,r=.18+.78*Math.sqrt(t),a=arm*Math.PI*2/arms+r*4.2+(R()-.5)*.5;return[Math.cos(a)*r+(R()-.5)*.05,Math.sin(a)*r*.82+(R()-.5)*.05];};
+  const K={hot:['lave','desert','cristal','io','rouge'],mid:['jardin','ocean','alien','champi','jungle','ruines','fleurs','desert','gelee','bonbon'],cold:['glace','lune','titan','ombre','fromage']};
+  /* Andromède : une grande spirale à deux bras */
+  for(let j=0;j<10;j++){const [x,y]=spiral(j,10,2);fillSys(sys(GAL_AND,'Système '+nm(),pick(['jaune','orange','rouge','bleue','geante','blanche','double']),x,y),3+(R()*3|0),K);}
+  /* Grand Nuage de Magellan : une galaxie irrégulière, plutôt allongée */
+  for(let j=0;j<6;j++){const a=R()*Math.PI*2,r=.15+R()*.7;fillSys(sys(GAL_MAG,'Système '+nm(),pick(['bleue','bleue','blanche','jaune','geante']),Math.cos(a)*r*1.1,Math.sin(a)*r*.55),2+(R()*3|0),K);}
+  /* Univers parallèle : le reflet de planètes de la Voie Lactée, avec les noms à l'envers et les couleurs du ciel inversées */
+  const rev=t=>{const r=[...t.normalize('NFC')].reverse().join('').toLowerCase();return r[0].toUpperCase()+r.slice(1);};
+  const src=[[0,1],[2,3],[6,7],[9,10],[12,13]].map(pr=>pr.map(i=>PLANETS[i]));
+  const realT=PLANETS.find(q=>q.name==='Terre'),realM=PLANETS.find(q=>q.name==='Mars');src.push([realT,realM]);
+  src.forEach((pair,k)=>{const o=pair[0].sys>=0?SYSTEMS[pair[0].sys]:SYSTEMS[0];
+    const s=sys(GAL_PAR,'Système '+rev(o.name.replace(/^Système (de |du )?/,'')),pick(['violette','fantome','violette','double']),-o.x*.9+(R()-.5)*.08,o.y*.9+(R()-.5)*.08);
+    pair.forEach((q,n)=>{const p=Object.assign({},q,{trees:q.trees.map(t=>t.slice()),i:PLANETS.length,name:rev(q.name),real:false,halloween:false,oubliee:false,orbit:n+1,ang:R()*Math.PI*2,par:true});
+      if(p.sky)p.sky=shf(p.sky,.5,0,0);if(p.cloud)p.cloud=shf(p.cloud,.5,0,0);
+      p.desc='Le reflet de '+q.name+' dans l’univers parallèle : tout se ressemble, mais rien n’est pareil. '+q.desc;p.temp=q.temp;p.orbitR=q.orbitR||n+1;
+      PLANETS.push(p);fin(p,s);p.air=q.air;});});
+  for(let j=0;j<3;j++){const [x,y]=spiral(j,3,2);fillSys(sys(GAL_PAR,'Système '+rev(nm()),pick(['violette','fantome']),x*.7,y*.7),2+(R()*2|0),K);}
+  /* trous noirs, trous de ver et trous blancs : placés loin des autres étoiles */
+  const spot=(gal,near)=>{let best=[.5,.4],bd=-1;for(let k=0;k<80;k++){const a=R()*Math.PI*2,r=(near?.12:.3)+R()*(near?.2:.6),x=Math.cos(a)*r,y=Math.sin(a)*r*.82;let md=9;
+      for(const q of SYSTEMS)if(q.gal===gal)md=Math.min(md,Math.hypot(q.x-x,q.y-y));for(const q of PLANETS)if(q.rogue&&q.gal===gal)md=Math.min(md,Math.hypot(q.mx-x,q.my-y));if(md>bd){bd=md;best=[x,y];}}return best;};
+  const hole=(gal,name,star,xy)=>{const [x,y]=xy||spot(gal);return sys(gal,name,star,x,y);};
+  for(const [gal,name] of [[0,'Sagittarius A*'],[1,'Trou noir de l’Abysse'],[GAL_AND,'M31*'],[GAL_PAR,'Trou noir du Miroir']]){
+    const s=hole(gal,name,'trouNoir',gal===0?[-.13,.11]:null);s.bh=true;body(pick(['ombre','glace','lune']),s,1,'cold');}
+  // les trous de ver vont par deux : chaque bouche mène près de l'autre
+  for(const [g1,g2,nmv] of [[0,1,'Alpha'],[0,GAL_AND,'Bêta'],[1,GAL_MAG,'Gamma']]){
+    const a=hole(g1,'Trou de ver '+nmv,'trouVer'),b=hole(g2,'Trou de ver '+nmv,'trouVer');a.twin=b.i;b.twin=a.i;}
+  for(const gal of [0,1,GAL_AND,GAL_MAG])hole(gal,'Trou blanc '+nm(),'trouBlanc');
+})();
+// au fond des trous noirs : le vide théorique, une prison de matière noire
+const VIDEP=(function addVide(){const T=KINDS.ombre;
+  const p=Object.assign({},T,{trees:[],i:PLANETS.length,kind:'ombre',name:'Le vide théorique',vide:true,label:'Vide théorique',g:.3,sky:'#0c0418',cloud:null,light:'#c8a0ff',night:true,
+    gal:0,sys:-1,orbit:0,orbitR:1,ang:0,parent:-1,moonIds:[],star:null,rogue:true,mx:0,my:0,temp:0,bright:.55,day:0,air:true,deco:0,moonsN:0,role:'Au fond d’un trou noir',
+    mapCol:'#5a1a9a',bio:0,flux:0,res:['matiereNoire'],
+    desc:'Au fond d’un trou noir, il n’y a rien : c’est le vide théorique. Une prison de matière noire violette enferme Ballis. Pour s’en échapper, il faut résoudre la théorie du néant, la plus dure de toutes.'});
+  PLANETS.push(p);return p.i;})();
+function setVideTarget(si){const s=SYSTEMS[si],p=PLANETS[VIDEP];p.gal=s.gal;p.mx=s.x;p.my=s.y;S.bhSys=si;}
 const BASE_NP=PLANETS.length,BASE_NS=SYSTEMS.length,BASE_NG=GALAXIES.length,BASE_BODIES=SYSTEMS.map(s=>s.bodies.length);
 function setSunTarget(si){const s=SYSTEMS[si],p=PLANETS[SUNP],st=STARS[s.star];p.sys=si;p.gal=s.gal;p.star=s.star;p.sky=st.col;p.mapCol=st.col;
   p.name=s.real?'Cœur du Soleil':'Cœur de l’étoile '+s.name.replace(/^Système (de |du )?/,'');S.sunSys=si;}
-const KIND_CHOICES=['jardin','rouge','glace','lave','desert','lune','ocean','cristal','alien','jungle','fleurs','ruines','machine','ombre','bonbon','champi','fromage','nuage','gelee','arcenciel','gazeuse','verrouillee','carbone','fer','oceanProfond','magma','sel'];
-const KIND_TEMP={magma:.9,fer:.5,sel:.55,carbone:.4,oceanProfond:.2,lave:.6,desert:.45,cristal:.35,glace:-.5,lune:-.2,fromage:-.2,gazeuse:-.4,ombre:-.3};
+const KIND_CHOICES=['jardin','rouge','glace','lave','desert','lune','ocean','cristal','alien','jungle','fleurs','ruines','machine','ombre','bonbon','champi','fromage','nuage','gelee','arcenciel','gazeuse'];
+const KIND_TEMP={lave:.6,desert:.45,cristal:.35,glace:-.5,lune:-.2,fromage:-.2,gazeuse:-.4,ombre:-.3};
 const STAR_CHOICES=['jaune','orange','rouge','bleue','blanche','geante','double','violette','fantome'];
 const SKY_COLS=['#8cc7ff','#ffb3d9','#c6ffb0','#ffd6a0','#d6b0ff','#ff9a8a','#7fe0ff','#1a1030'];
 const GAL_COLS=['#7ad8ff','#ff8ad8','#a8ff7a','#ffd27a','#c08aff','#ff7a5a'];
@@ -3780,7 +3857,25 @@ function astresMade(kind,name){bigText(name+' est né'+(kind==='gal'?'e':'')+' !
   renderGalBtns();renderHotbar();checkContracts();save(true);}
 
 /* --- Plonger dans une étoile --- */
+function spaceWhy(gal,cost){
+  if(P.vide&&!thDone('neant'))return VIDE_MSG;
+  if(gal!==P.gal&&S.mode!=='libre'){if(isPar(gal)!==isPar(P.gal)){if(!S.vortex)return 'C’est dans l’univers parallèle : il faut la Machine du vortex.';}
+    else if(!S.inter)return 'C’est dans une autre galaxie : il faut le Moteur intergalactique.';}
+  if(!inShip&&!inMS())return 'Monte dans ta fusée (V) et décolle jusqu’à l’espace.';
+  if(inShip&&gravAt(sh.y)>0)return 'Monte encore : il faut être en apesanteur, au-dessus de l’altitude '+GTOP+'.';
+  if(cost&&S.mode!=='libre'&&S.fuel<cost)return 'Il faut '+cost+' unités de carburant.';
+  return null;}
+function holeTarget(si){const s=SYSTEMS[si],st=STARS[s.star];
+  if(st.ver){const t=SYSTEMS[s.twin];let best=null,bd=9;for(const q of SYSTEMS)if(q.gal===t.gal&&q.bodies.length&&!STARS[q.star].special){const d=Math.hypot(q.x-t.x,q.y-t.y);if(d<bd){bd=d;best=q;}}
+    return best?best.bodies[0]:null;}
+  // un trou blanc repousse très loin : dans une autre galaxie, sur une planète au hasard
+  const far=PLANETS.filter(p=>!p.sun&&!p.vide&&!p.par&&p.parent<0&&p.gal!==s.gal&&p.gal<BASE_NG&&p.i!==PI_CUR);return far.length?far[Math.random()*far.length|0].i:0;}
+function holeUse(si){const s=SYSTEMS[si],st=STARS[s.star];if(spaceWhy(s.gal,0)||warp)return;const to=holeTarget(si);if(to==null)return;
+  forceWarp(to);
+  if(st.ver){S.stats.ver=1;bigText('Trou de ver !',1.2);setTimeout(()=>toast('Le trou de ver t’a fait traverser l’espace en un instant, sans dépenser de carburant : te voilà de l’autre côté, dans '+GALAXIES[PLANETS[to].gal].name+' !',7000,true),3300);}
+  else{S.stats.blanc=1;bigText('Repoussé !',1.2);setTimeout(()=>toast('Le trou blanc rejette tout ce qui s’approche : il t’a projeté très loin, jusqu’à '+PLANETS[to].name+', dans '+GALAXIES[PLANETS[to].gal].name+' !',7000,true),3300);}}
 function sunProblem(si){
+  if(STARS[SYSTEMS[si].star].bh){if(P.vide)return 'Tu es déjà au fond d’un trou noir.';return spaceWhy(SYSTEMS[si].gal,20);}
   if(!thDone('fusion'))return 'En théorie, on peut entrer dans une étoile… mais la théorie n’est pas finie ! Complète « Fusion stellaire » au bureau scientifique (touche B).';
   if(S.mode!=='libre'&&!S.sunShield)return 'Installe d’abord le Bouclier solaire à l’atelier : sans lui, Ballis fondrait en une seconde !';
   if(PI_CUR===SUNP&&PLANETS[SUNP].sys===si)return 'Tu es déjà dans cette étoile.';
@@ -3789,7 +3884,9 @@ function sunProblem(si){
   if(inShip&&gravAt(sh.y)>0)return 'Monte encore : il faut être en apesanteur, au-dessus de l’altitude '+GTOP+'.';
   if(S.mode!=='libre'&&S.fuel<30)return 'Il faut 30 unités de carburant pour plonger dans une étoile.';
   return null;}
-function startSunDive(si){if(sunProblem(si)||warp)return;if(S.mode!=='libre')S.fuel-=30;
+function startSunDive(si){if(sunProblem(si)||warp)return;
+  if(STARS[SYSTEMS[si].star].bh){if(S.mode!=='libre')S.fuel-=20;S.bhFrom=PI_CUR;setVideTarget(si);forceWarp(VIDEP);bigText('Aspiré par le trou noir…',1.4);return;}
+  if(S.mode!=='libre')S.fuel-=30;
   closeMap();warp={t:0,to:SUNP,sunSys:si,swapped:false,ms:!inShip&&inMS()};
   const w=$('#warp');w.hidden=true;void w.offsetWidth;w.hidden=false;tone(120,1.3,'sawtooth',.05,8);setTimeout(()=>tone(1400,.9,'sine',.05,.2),1250);}
 function genSun(Pl,R){
@@ -3850,7 +3947,7 @@ function renderLab(){
     else if(thLock)html+='<h3>'+th.name+'</h3><p>Cette théorie s’appuie sur une autre : complète d’abord « '+THEO_BY[th.req].name+' ».</p><p class="hint">Elle permettra de '+th.unlock+'.</p>';
     else{const q=th.q[st.n];if(!labQ||labQ.th!==th.id||labQ.n!==st.n){const o=[1,2,3,4];for(let i=3;i>0;i--){const j=Math.random()*(i+1)|0;[o[i],o[j]]=[o[j],o[i]];}labQ={th:th.id,n:st.n,o,off:[],hint:''};}
       const cool=performance.now()<labCool,helpers=(SAVANTS[th.dom]||[]).map(id=>NPC_BY[id]);
-      html+='<div class="eyebrow">'+th.name+' · question '+(st.n+1)+' sur '+th.q.length+'</div><p class="q-txt">'+q[0]+'</p><div class="ans">'+
+      html+='<div class="eyebrow">'+th.name+' · question '+(st.n+1)+' sur '+th.q.length+(th.hard?' · extra dure : une erreur et tout recommence, aucun savant ne peut t’aider':'')+'</div><p class="q-txt">'+q[0]+'</p><div class="ans">'+
         labQ.o.map(k=>'<button type="button" class="btn ans-b" data-ans="'+k+'"'+(cool||labQ.off.includes(k)?' disabled':'')+'>'+q[k]+'</button>').join('')+'</div>'+
         (labQ.hint?'<p class="q-hint">'+labQ.hint+'</p>':'')+
         '<div class="help">'+helpers.map(n=>S.met[n.id]?'<button type="button" class="btn small" data-help="'+n.id+'"'+(labQ.off.length||cool?' disabled':'')+'>Demander à '+n.name+'</button>':'<span class="hint">'+n.name+' pourrait t’aider : va lui parler '+npcWhere(n)+'.</span>').join('')+'</div>'+
@@ -3875,11 +3972,21 @@ function renderLab(){
 function answerQ(k){const th=THEO_BY[labTheo],st=thSt(th.id),q=th.q[st.n];if(!q||performance.now()<labCool)return;
   if(k===1){st.n++;labMsg={ok:1,t:'Bonne réponse ! '+q[5]};tone(660,.1,'triangle',.05);setTimeout(()=>tone(990,.14,'triangle',.05),90);
     if(st.n>=th.q.length){st.done=true;labMsg={ok:1,t:'Théorie complète : '+th.name+' ! Tu peux maintenant '+th.unlock+'.'};bigText('Théorie complète !',2.2);
-      toast('Le bureau scientifique valide ta théorie « '+th.name+' » !',5000,true);setTimeout(()=>tone(1318,.3,'triangle',.05),220);checkContracts();renderPanel();}}
+      toast('Le bureau scientifique valide ta théorie « '+th.name+' » !',5000,true);setTimeout(()=>tone(1318,.3,'triangle',.05),220);checkContracts();renderPanel();
+      if(th.id==='neant')neantDone();}}
+  else if(th.hard){st.n=0;labCool=performance.now()+15000;
+    labMsg={ok:0,t:'Faux ! La théorie du néant est extra dure : tout recommence à zéro. Réfléchis très bien… Tu pourras répondre dans 15 secondes.'};
+    tone(110,.5,'square',.05,.5);setTimeout(()=>{if(labOpen&&labTab==='bureau')renderLab();},15100);}
   else{const lost=st.n>0;st.n=Math.max(0,st.n-1);labCool=performance.now()+8000;
     labMsg={ok:0,t:'Faux ! Le bureau scientifique refuse ta réponse'+(lost?' et la théorie recule d’une étape':'')+'. Réfléchis bien… Tu pourras répondre dans 8 secondes.'};
     tone(160,.3,'square',.04,.6);setTimeout(()=>{if(labOpen&&labTab==='bureau')renderLab();},8100);}
   labQ=null;save(true);renderLab();}
+// évasion : la prison de matière noire s'ouvre, et Ballis retourne là d'où il est venu
+function neantDone(){renderGalBtns();if(!P.vide)return;closeLab();bigText('La prison s’ouvre !',2.4);
+  toast('La théorie du néant brise la prison de matière noire ! Ballis s’échappe du trou noir. Tu peux maintenant construire la Machine du vortex à l’atelier.',8000,true);
+  setTimeout(()=>{if(P.vide&&!warp)forceWarp(PLANETS[S.bhFrom]&&S.bhFrom!==VIDEP?S.bhFrom:0);},2600);}
+function forceWarp(i){closeMap();warp={t:0,to:i,swapped:false,ms:false};const w=$('#warp');w.hidden=true;void w.offsetWidth;w.hidden=false;
+  tone(120,1.3,'sawtooth',.05,8);setTimeout(()=>tone(1400,.9,'sine',.05,.2),1250);}
 function askHelp(id){if(!labQ||labQ.off.length)return;const th=THEO_BY[labTheo],q=th.q[thSt(th.id).n],n=NPC_BY[id];
   const wrong=[2,3,4];for(let i=2;i>0;i--){const j=Math.random()*(i+1)|0;[wrong[i],wrong[j]]=[wrong[j],wrong[i]];}
   labQ.off=wrong.slice(0,2);labQ.hint=n.name+' : « Ce n’est sûrement pas « '+q[labQ.off[0]]+' », ni « '+q[labQ.off[1]]+' ». Entre les deux qui restent, à toi de choisir ! »';tone(523,.1,'sine',.04,1.2);renderLab();}
@@ -3924,6 +4031,7 @@ function useAction(){if(inShip)return;
   const kt=kartNear();if(kt){toggleRide(kt);return;}
   if(npcFocus){openTalk(npcFocus);return;}
   if(target&&target.id===ID.tableADN){openLab('adn',true);return;}
+  if(target&&target.id===ID.terminalNeant){labTheo='neant';labMsg=null;openLab('bureau',false);return;}
   const p=petNear();if(p)cuddlePet(p);}
 function friendPrompt(){if(inShip)return null;
   if(ride)return (isTouch?'« Agir »':'U')+' : descendre du Coin-Coin';
@@ -3931,6 +4039,7 @@ function friendPrompt(){if(inShip)return null;
   if(kartNear())return (isTouch?'« Agir »':'U')+' : monter dans le Coin-Coin';
   if(npcFocus)return (isTouch?'« Agir »':'U')+' : parler à '+npcFocus.d.name;
   if(target&&target.id===ID.tableADN)return (isTouch?'« Agir »':'U ou clic droit')+' : utiliser la table d’ADNisation';
+  if(target&&target.id===ID.terminalNeant)return (isTouch?'« Agir »':'U ou clic droit')+' : ouvrir la théorie du néant';
   return null;}
 
 function worldSalt(i){return i===SUNP?(PLANETS[SUNP].sys+1)*1013:0;}
@@ -3993,8 +4102,12 @@ const CONTRACTS=[
   {id:'fetenuit',t:'Fête de nuit',d:'Va à une fête de nuit sur la place de Balisland (le samedi soir)',goal:1,val:()=>st().fete?1:0},
   {id:'bouclier',t:'Sous le bouclier',d:'Regarde le bouclier de Balisland arrêter une météorite',goal:1,val:()=>st().shield?1:0},
   {id:'colonies',t:'Colonies spatiales',d:'Visite les 3 colonies de Ballis, dans des stations spatiales',goal:3,val:()=>Object.keys(st().cols||{}).length},
-  {id:'verrou',t:'Entre le jour et la nuit',d:'Pose-toi sur une planète verrouillée (liste « Exoplanètes réalistes » de la carte)',goal:1,val:()=>PLANETS.some(p=>p.kind==='verrouillee'&&S.visited[p.i])?1:0},
-  {id:'exo',t:'Chasseur d’exoplanètes',d:'Visite les 6 sortes d’exoplanètes réalistes',goal:6,val:()=>new Set(PLANETS.filter(p=>p.exo&&S.visited[p.i]).map(p=>p.kind)).size},
+  {id:'galaxies',t:'Voyageur des galaxies',d:'Visite Andromède et le Grand Nuage de Magellan',goal:2,val:()=>[GAL_AND,GAL_MAG].filter(g=>PLANETS.some(p=>p.gal===g&&S.visited[p.i])).length},
+  {id:'ver',t:'Raccourci cosmique',d:'Traverse un trou de ver (carte : Raccourcis)',goal:1,val:()=>st().ver?1:0},
+  {id:'blanc',t:'Repoussé !',d:'Approche-toi d’un trou blanc',goal:1,val:()=>st().blanc?1:0},
+  {id:'trounoir',t:'Au fond du trou noir',d:'Plonge dans un trou noir (Sagittarius A*, au centre de la Voie Lactée)',goal:1,val:()=>st().bh?1:0},
+  {id:'evasion',t:'Évasion du néant',d:'Échappe-toi de la prison du vide théorique en résolvant la théorie du néant',goal:1,val:()=>thDone('neant')?1:0},
+  {id:'parallele',t:'De l’autre côté du miroir',d:'Va dans l’univers parallèle grâce à la Machine du vortex',goal:1,val:()=>st().par?1:0},
   {id:'nobel',t:'Génie cubique',d:'Complète toutes les théories du bureau scientifique',goal:THEO.length,val:()=>thCount()},
 ];
 function checkContracts(){for(const c of CONTRACTS){if(!S.done[c.id]&&c.val()>=c.goal){S.done[c.id]=true;toast('Contrat rempli : '+c.t,3200,true);tone(784,.12,'triangle',.06);setTimeout(()=>tone(1046,.25,'triangle',.06),110);}}renderContracts();}
