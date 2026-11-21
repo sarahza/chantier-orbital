@@ -8,6 +8,10 @@ Fore le sol rouge de Balis, construis ta base, fais le plein de ta fusée et dé
 
 Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordinateur.
 
+### 🤖 [Atelier d'agents](https://sarahza.github.io/chantier-orbital/agent/)
+
+En bonus, hors du jeu : programme ton propre agent IA (propulsé par Claude). Tu choisis sa mission, ses outils, tu peux en inventer en JavaScript, et tu valides chacune de ses actions. Il faut une clé API Claude.
+
 ---
 
 ## 🌌 Un univers immense à explorer
