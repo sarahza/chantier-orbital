@@ -5,7 +5,7 @@
 //   Bedrock : node leftcontrol.js bedrock          puis, dans le jeu : /connect localhost:3000
 //   Java    : node leftcontrol.js java --port 25565 [--hote localhost] [--version 1.21.4]
 //
-// Ensuite, sur la page LeftControl, onglet Minecraft : « Connecter le robot ».
+// Ensuite, sur la page LeftControl, mode Code > Minecraft : « Connecter le robot ».
 
 import { WebSocketServer } from "ws";
 import { randomUUID } from "node:crypto";
@@ -29,7 +29,7 @@ const ORIGINES = new Set(["https://sarahza.github.io", "null", "http://localhost
 const COMMANDE_OK = /^(fill|setblock) (~-?\d*\s){3}((~-?\d*\s){3})?[a-z_]+$/;
 const PAUSE_MS = edition === "java" ? 120 : 0;
 
-const dire = (...m) => console.log("🤖", ...m);
+const dire = (...m) => console.log("[LeftControl]", ...m);
 
 const pages = new Set(); // pages LeftControl connectées
 
@@ -47,7 +47,7 @@ if (edition === "bedrock") {
   const wss = new WebSocketServer({ port: PORT_BEDROCK });
   const enAttente = new Map();
   wss.on("connection", (ws) => {
-    changerEtat(true, "✅ Minecraft Bedrock est connecté ! LeftControl est prêt à construire.");
+    changerEtat(true, "Minecraft Bedrock est connecté ! LeftControl est prêt à construire.");
     jeu.executer = (cmd) => new Promise((resolve) => {
       const requestId = randomUUID();
       const minuteur = setTimeout(() => { enAttente.delete(requestId); resolve({ ok: false, message: "pas de réponse" }); }, 5000);
@@ -73,7 +73,7 @@ if (edition === "bedrock") {
     changerEtat(false, `Connexion à Minecraft Java (${hote}:${port})…`);
     const robot = createBot({ host: hote, port, username: nom, auth: "offline", version: opt("version", false) });
     robot.once("spawn", () => {
-      changerEtat(true, `✅ ${nom} est entré dans le monde Minecraft ! Il construit là où il se trouve. Écris « viens » dans le chat pour qu'il te rejoigne.`);
+      changerEtat(true, `${nom} est entré dans le monde Minecraft ! Il construit là où il se trouve. Écris « viens » dans le chat pour qu'il te rejoigne.`);
       robot.chat("Bonjour ! Je suis LeftControl. Écris « viens » et je te rejoins.");
       jeu.executer = async (cmd) => { robot.chat("/" + cmd); return { ok: true }; };
     });
@@ -126,13 +126,13 @@ serveurPage.on("connection", (page) => {
     let erreurs = 0;
     try {
       for (let i = 0; i < cmds.length; i++) {
-        if (travail.stop) { diffuser({ type: "fini", texte: `⏹ Construction arrêtée (${i} / ${cmds.length}).` }); return; }
+        if (travail.stop) { diffuser({ type: "fini", texte: `Construction arrêtée (${i} / ${cmds.length}).` }); return; }
         const r = await jeu.executer(cmds[i]);
         if (r && r.ok === false) { erreurs++; if (erreurs <= 3) dire("Commande refusée par le jeu :", cmds[i], "→", r.message); }
         if (i % 5 === 0 || i === cmds.length - 1) diffuser({ type: "progres", fait: i + 1, total: cmds.length });
         if (PAUSE_MS) await new Promise((r) => setTimeout(r, PAUSE_MS));
       }
-      diffuser({ type: "fini", texte: erreurs ? `Terminé, mais ${erreurs} commande(s) ont échoué (les triches sont-elles activées ?).` : `✅ « ${m.nom} » est construit !` });
+      diffuser({ type: "fini", texte: erreurs ? `Terminé, mais ${erreurs} commande(s) ont échoué (les triches sont-elles activées ?).` : `« ${m.nom} » est construit !` });
     } catch (e) {
       diffuser({ type: "erreur", texte: e.message });
     } finally { travail = null; }

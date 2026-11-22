@@ -1,6 +1,6 @@
-# 🤖 LeftControl dans Minecraft
+# LeftControl dans Minecraft
 
-Ce petit programme fait entrer **LeftControl** dans ton monde Minecraft. Il construit tout seul les plans que tu prépares sur la page LeftControl (onglet ⛏️ Minecraft).
+Ce petit programme fait entrer **LeftControl** dans ton monde Minecraft. Il construit tout seul les plans que tu prépares sur la page LeftControl (mode Code, onglet Minecraft).
 
 ```
 Page LeftControl  ──►  ce programme (sur ton ordinateur)  ──►  Minecraft
@@ -34,7 +34,7 @@ Les constructions apparaissent devant **toi** (2 blocs plus loin).
 
 Le robot entre dans le monde comme un vrai joueur, appelé **LeftControl**.
 
-⚠️ Il n'a pas de compte Minecraft, donc il faut un monde qui accepte les joueurs sans compte :
+Attention : il n'a pas de compte Minecraft, donc il faut un monde qui accepte les joueurs sans compte :
 
 - **Le plus simple : un serveur** sur ton ordinateur (le serveur officiel gratuit de Minecraft). Dans son fichier `server.properties`, mets `online-mode=false`, démarre-le, puis tape dans la console du serveur : `op LeftControl`.
 - **Monde solo ouvert en LAN** : Minecraft le refuse normalement pour les joueurs sans compte. Il faut un mod comme « Custom LAN » pour désactiver le « mode en ligne ».
@@ -51,9 +51,9 @@ npm run java -- --port 25565
 
 ## 3. Construire
 
-1. Sur la page LeftControl, onglet **⛏️ Minecraft**, prépare un plan (avec l'IA ou un plan tout prêt).
-2. Clique sur **🔌 Connecter le robot**. Si le navigateur demande l'autorisation d'accéder au réseau local, accepte.
-3. Clique sur **🏗️ Construire dans Minecraft**. Tu peux l'arrêter à tout moment avec **⏹**.
+1. Sur la page LeftControl, mode **Code**, onglet **Minecraft**, prépare un plan (avec l'IA ou un plan tout prêt).
+2. Clique sur **Connecter le robot**. Si le navigateur demande l'autorisation d'accéder au réseau local, accepte.
+3. Clique sur **Construire dans Minecraft**. Tu peux l'arrêter à tout moment avec **Arrêter**.
 
 ## Sécurité
 
