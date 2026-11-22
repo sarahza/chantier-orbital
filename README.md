@@ -10,7 +10,11 @@ Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordi
 
 ### 🤖 [LeftControl, ton agent IA](https://sarahza.github.io/chantier-orbital/agent/)
 
-En bonus, hors du jeu : **LeftControl**, un agent IA qui vit dans ton ordinateur (gratuit, rien à configurer). Donne-lui une mission : discuter, coder un petit jeu… ou construire dans **Minecraft** ! Il dessine le plan, te montre un aperçu en 3D, puis le construit dans ton monde grâce à son robot ([`agent/leftcontrol-bot`](agent/leftcontrol-bot/LISEZMOI.md)) ou avec des commandes à copier.
+En bonus, hors du jeu : **LeftControl**, un agent IA qui vit dans ton ordinateur (gratuit, sans compte ni clé). Trois modes :
+
+- **Recherche** : il cherche dans Wikipédia et t'explique, avec ses sources.
+- **Code** : il écrit des programmes et des petits jeux que tu peux lancer tout de suite… et il construit dans **Minecraft**, avec son robot ([`agent/leftcontrol-bot`](agent/leftcontrol-bot/LISEZMOI.md)) ou des commandes à copier.
+- **Business** : business plan, emails, noms et slogans, calcul de prix et de marge.
 
 ---
 

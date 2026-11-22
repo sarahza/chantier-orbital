@@ -4,235 +4,439 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LeftControl</title>
-<meta name="description" content="LeftControl, un agent IA programmable qui tourne dans ton ordinateur : il discute, code et construit dans Minecraft.">
+<meta name="description" content="LeftControl, un agent IA qui tourne dans ton ordinateur. Trois modes : Recherche, Code et Business.">
+<meta name="theme-color" content="#020405">
 <style>
 :root {
-  --bg: #f4f2fb; --panel: #ffffff; --panel-2: #f0edf9; --line: #d9d3ee;
-  --text: #1d1933; --muted: #625c80; --accent: #6b4de6; --accent-text: #ffffff;
-  --ok: #1f8a4c; --warn: #b8660b; --err: #c0392b; --user: #ece6ff; --code: #f6f4fd; --radius: 12px;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0f0c1f; --panel: #1a1631; --panel-2: #231e40; --line: #352e5c;
-    --text: #ece8ff; --muted: #a49cc9; --accent: #8f74ff; --accent-text: #0f0c1f;
-    --ok: #4cd98a; --warn: #f2a54a; --err: #ff7b6b; --user: #2a2350; --code: #120f24;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0f0c1f; --panel: #1a1631; --panel-2: #231e40; --line: #352e5c;
-  --text: #ece8ff; --muted: #a49cc9; --accent: #8f74ff; --accent-text: #0f0c1f;
-  --ok: #4cd98a; --warn: #f2a54a; --err: #ff7b6b; --user: #2a2350; --code: #120f24;
+  --accent: #03bb85; --accent-soft: rgba(3, 187, 133, .14); --accent-line: rgba(3, 187, 133, .28);
+  --accent-text: #00150f; --bg: #020405; --panel: rgba(4, 10, 11, .58); --panel-2: rgba(255, 255, 255, .045);
+  --line: rgba(160, 230, 210, .14); --text: #e4f3ee; --muted: #8eb2a7; --ok: #03bb85; --warn: #f0b44c;
+  --err: #ff7a70; --radius: 14px;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-body { background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-header { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-header h1 { font-size: 22px; margin: 0; letter-spacing: .02em; }
-header h1 span { color: var(--accent); }
-header p { margin: 0; color: var(--muted); flex: 1 1 260px; }
-main { max-width: 1200px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; }
-h2 { font-size: 16px; margin: 0 0 10px; }
-label { display: block; font-weight: 600; margin: 10px 0 4px; }
-select, textarea, input[type=text] { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); font: inherit; }
+body { background: var(--bg); color: var(--text); font: 15px/1.55 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; min-height: 100vh; }
+#cosmos { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+.page { position: relative; z-index: 1; }
+a { color: var(--accent); }
+
+header { max-width: 1200px; margin: 0 auto; padding: 22px 16px 8px; display: flex; align-items: center; gap: 14px; }
+.brand { min-width: 0; }
+@media (max-width: 560px) { .brand h1 { font-size: 21px; } #logo { width: 44px; height: 44px; } }
+#logo { width: 52px; height: 52px; flex: none; }
+.brand h1 { font-size: 26px; margin: 0; letter-spacing: .08em; font-weight: 700; }
+.brand h1 span { color: var(--accent); }
+.brand p { margin: 0; color: var(--muted); font-size: 14px; }
+
+main { max-width: 1200px; margin: 0 auto; padding: 8px 16px 40px; display: grid; gap: 16px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; min-width: 0;
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); box-shadow: 0 10px 40px rgba(0, 0, 0, .35); }
+h2 { font-size: 13px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); font-weight: 600; }
+h3 { font-size: 15px; margin: 18px 0 8px; }
+label { display: block; font-weight: 600; margin: 10px 0 5px; font-size: 14px; }
+label.inline { display: flex; gap: 8px; align-items: center; font-weight: 400; }
+select, textarea, input[type=text] { width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line);
+  background: rgba(0, 0, 0, .35); color: var(--text); font: inherit; }
+select:focus, textarea:focus, input:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+select option { background: #07110f; }
 textarea { resize: vertical; }
 textarea.code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; }
-button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); cursor: pointer; }
+input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
+button { font: inherit; font-size: 14px; padding: 9px 15px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--text); cursor: pointer; transition: border-color .15s, background .15s; }
 button:hover:not(:disabled) { border-color: var(--accent); }
-button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 650; }
+button.primary:hover:not(:disabled) { background: #04d697; }
 button.danger { color: var(--err); }
-button:disabled { opacity: .5; cursor: not-allowed; }
+button:disabled { opacity: .45; cursor: not-allowed; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .grow { flex: 1 1 200px; }
 small, .hint { color: var(--muted); font-size: 13px; }
+code { background: var(--panel-2); padding: 1px 5px; border-radius: 5px; font-size: .92em; }
+
 .brain { display: grid; grid-template-columns: 1fr auto; gap: 10px 16px; align-items: end; }
 @media (max-width: 700px) { .brain { grid-template-columns: 1fr; } }
-.bar { height: 8px; background: var(--panel-2); border-radius: 99px; overflow: hidden; margin-top: 8px; }
-.bar > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
-#brainStatus { font-weight: 600; }
+.bar { height: 4px; background: var(--panel-2); border-radius: 99px; overflow: hidden; margin-top: 10px; }
+.bar > div { height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 12px var(--accent); transition: width .2s; }
+#brainStatus { display: block; margin-top: 6px; }
 .st-ok { color: var(--ok); } .st-warn { color: var(--warn); } .st-err { color: var(--err); }
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
-.mission { display: none; }
-.mission.active { display: block; }
-.log { display: flex; flex-direction: column; gap: 10px; max-height: 60vh; min-height: 200px; overflow-y: auto; padding: 4px 2px 12px; }
-.msg { padding: 10px 12px; border-radius: 10px; overflow-wrap: anywhere; }
-.msg.user { background: var(--user); align-self: flex-end; max-width: 85%; white-space: pre-wrap; }
-.msg.agent { background: var(--panel-2); max-width: 100%; }
-.msg .who { font-size: 12px; color: var(--muted); display: block; margin-bottom: 2px; }
+details summary { cursor: pointer; font-weight: 600; margin: 12px 0 6px; font-size: 14px; }
+
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.modes button { padding: 12px 10px; text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.modes button b { font-size: 16px; letter-spacing: .02em; }
+.modes button span { font-size: 12.5px; color: var(--muted); }
+.modes button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.modes button[aria-selected="true"] b { color: var(--accent); }
+@media (max-width: 560px) { .modes button span { display: none; } }
+.mode { display: none; } .mode.active { display: block; }
+.subtabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.subtabs button[aria-selected="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.sub { display: none; } .sub.active { display: block; }
+
+.log { display: flex; flex-direction: column; gap: 10px; max-height: 58vh; min-height: 180px; overflow-y: auto; padding: 4px 2px 12px; }
+.msg { padding: 11px 13px; border-radius: 12px; overflow-wrap: anywhere; }
+.msg.user { background: var(--accent-soft); border: 1px solid var(--accent-line); align-self: flex-end; max-width: 85%; white-space: pre-wrap; }
+.msg.agent { background: rgba(0, 0, 0, .3); border: 1px solid var(--line); max-width: 100%; }
+.msg .who { font-size: 11.5px; color: var(--muted); display: block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: .1em; }
+.msg.user .who { color: var(--accent); }
 .msg.info { color: var(--muted); font-size: 13px; text-align: center; padding: 2px; }
 .msg.error { border: 1px solid var(--err); color: var(--err); }
-.msg p { margin: 0 0 6px; white-space: pre-wrap; }
-.codeblock { background: var(--code); border: 1px solid var(--line); border-radius: 8px; margin: 6px 0; }
-.codeblock pre { margin: 0; padding: 10px; overflow-x: auto; font: 12.5px/1.45 ui-monospace, Menlo, Consolas, monospace; max-height: 340px; }
-.codeblock .row { padding: 6px 8px; border-top: 1px solid var(--line); }
-.codeblock .lang { font-size: 12px; color: var(--muted); margin-right: auto; }
-iframe.run { width: 100%; height: 360px; border: 1px solid var(--line); border-radius: 8px; background: #fff; margin-top: 6px; }
+.md p { margin: 0 0 8px; } .md p:last-child { margin-bottom: 0; }
+.md h4 { margin: 10px 0 6px; font-size: 15px; color: var(--accent); }
+.md ul, .md ol { margin: 4px 0 8px; padding-left: 22px; }
+.md table { border-collapse: collapse; margin: 6px 0; font-size: 14px; display: block; overflow-x: auto; }
+.md td, .md th { border: 1px solid var(--line); padding: 4px 8px; text-align: left; }
+.sources { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.sources ol { margin: 4px 0 0; padding-left: 20px; }
+.status-line { font-size: 13px; color: var(--muted); font-style: italic; }
+.codeblock { background: rgba(0, 0, 0, .45); border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; }
+.codeblock pre { margin: 0; padding: 11px; overflow-x: auto; font: 12.5px/1.5 ui-monospace, Menlo, Consolas, monospace; max-height: 340px; color: #cfeee4; }
+.codeblock .row { padding: 7px 9px; border-top: 1px solid var(--line); }
+.codeblock .lang { font-size: 11.5px; color: var(--muted); margin-right: auto; text-transform: uppercase; letter-spacing: .1em; }
+.codeblock button { padding: 5px 11px; font-size: 13px; }
+iframe.run { width: 100%; height: 360px; border: 1px solid var(--line); border-radius: 10px; background: #fff; margin-top: 6px; display: block; }
 .composer { display: flex; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
-.composer textarea { min-height: 48px; }
+.composer textarea { min-height: 50px; }
 .composer .btns { display: flex; flex-direction: column; gap: 6px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+.chips button { padding: 5px 11px; font-size: 13px; border-radius: 99px; }
+.options { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+
 .mc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
 @media (max-width: 860px) { .mc { grid-template-columns: 1fr; } }
-canvas#preview { width: 100%; aspect-ratio: 4 / 3; background: var(--panel-2); border-radius: 10px; display: block; }
-details summary { cursor: pointer; font-weight: 600; margin: 8px 0; }
-.pill { display: inline-block; padding: 2px 8px; border-radius: 99px; background: var(--panel-2); font-size: 13px; }
+canvas#preview { width: 100%; aspect-ratio: 4 / 3; background: rgba(0, 0, 0, .35); border: 1px solid var(--line); border-radius: 12px; display: block; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-size: 13px; }
 ol.steps { padding-left: 20px; margin: 6px 0; } ol.steps li { margin: 4px 0; }
-code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 0 16px 24px; position: relative; z-index: 1; }
 </style>
 </head>
 <body>
+<canvas id="cosmos" aria-hidden="true"></canvas>
+
+<div class="page">
 <header>
-  <h1>🤖 Left<span>Control</span></h1>
-  <p>Un agent IA qui vit dans ton ordinateur. Donne-lui une mission : discuter, coder… ou construire dans Minecraft.</p>
+  <canvas id="logo" width="104" height="104" aria-hidden="true"></canvas>
+  <div class="brand">
+    <h1>LEFT<span>CONTROL</span></h1>
+    <p>Agent IA local. Il tourne dans ton ordinateur, sans compte et sans clé.</p>
+  </div>
 </header>
 
 <main>
   <!-- ============ CERVEAU ============ -->
   <section class="panel" aria-labelledby="brainTitle">
-    <h2 id="brainTitle">🧠 Le cerveau de LeftControl</h2>
+    <h2 id="brainTitle">Cerveau</h2>
     <div class="brain">
       <div>
-        <label for="model" style="margin-top:0">Choisis son cerveau</label>
-        <select id="model">
-          <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Léger (~1 Go) — pour les ordinateurs modestes</option>
-          <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC" selected>Équilibré (~2 Go) — conseillé</option>
-          <option value="Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC">Codeur (~2 Go) — meilleur pour programmer</option>
-          <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">Puissant (~5 Go) — ordinateur avec bonne carte graphique</option>
+        <select id="model" aria-label="Choix du cerveau">
+          <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Léger — environ 1 Go, pour les ordinateurs modestes</option>
+          <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC" selected>Équilibré — environ 2 Go, conseillé</option>
+          <option value="Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC">Codeur — environ 2 Go, meilleur pour programmer</option>
+          <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">Puissant — environ 5 Go, bonne carte graphique</option>
         </select>
         <div class="bar" aria-hidden="true"><div id="bar"></div></div>
-        <small id="brainStatus">Endormi. Clique sur « Réveiller » : la première fois, son cerveau est téléchargé (puis gardé dans le navigateur).</small>
+        <small id="brainStatus">En veille. Au premier réveil, le cerveau est téléchargé puis gardé dans le navigateur.</small>
       </div>
-      <div class="row"><button id="wake" class="primary">⚡ Réveiller LeftControl</button></div>
+      <div class="row"><button id="wake" class="primary">Réveiller LeftControl</button></div>
     </div>
     <details>
-      <summary>🛠️ Programmer LeftControl</summary>
-      <label for="persona">Sa personnalité et ses règles (valables pour toutes les missions)</label>
+      <summary>Programmer LeftControl</summary>
+      <label for="persona">Personnalité et règles (valables dans tous les modes)</label>
       <textarea id="persona" rows="3"></textarea>
       <div class="row" style="margin-top:8px"><button id="resetPersona">Remettre par défaut</button><small>Enregistré automatiquement dans ce navigateur.</small></div>
     </details>
   </section>
 
-  <!-- ============ MISSIONS ============ -->
+  <!-- ============ MODES ============ -->
   <section class="panel">
-    <div class="tabs" role="tablist">
-      <button role="tab" data-tab="chat" aria-selected="true">💬 Discuter</button>
-      <button role="tab" data-tab="code" aria-selected="false">💻 Coder</button>
-      <button role="tab" data-tab="mc" aria-selected="false">⛏️ Minecraft</button>
+    <div class="modes" role="tablist" aria-label="Modes">
+      <button role="tab" data-mode="recherche" aria-selected="true"><b>Recherche</b><span>Il cherche et t'explique, avec ses sources</span></button>
+      <button role="tab" data-mode="code" aria-selected="false"><b>Code</b><span>Programmes, jeux et constructions Minecraft</span></button>
+      <button role="tab" data-mode="business" aria-selected="false"><b>Business</b><span>Projets, emails, prix, idées</span></button>
     </div>
 
-    <!-- Discuter -->
-    <div class="mission active" id="m-chat">
-      <div class="log" id="log-chat" aria-live="polite"></div>
-      <div class="composer">
-        <textarea id="in-chat" placeholder="Pose une question à LeftControl… (Entrée pour envoyer)"></textarea>
-        <div class="btns"><button class="primary send" data-m="chat">Envoyer</button><button class="danger stop" disabled>⏹ Arrêter</button></div>
+    <!-- Recherche -->
+    <div class="mode active" id="m-recherche" role="tabpanel">
+      <div class="options">
+        <label class="inline"><input type="checkbox" id="useWiki" checked> Chercher dans Wikipédia avant de répondre</label>
       </div>
-      <div class="row" style="margin-top:8px"><button class="clear" data-m="chat">Nouvelle conversation</button></div>
-    </div>
-
-    <!-- Coder -->
-    <div class="mission" id="m-code">
-      <small>Exemples : « Code un jeu où il faut deviner un nombre », « Fais une page avec un chat qui suit la souris ». Le code s'affiche avec un bouton ▶ pour l'essayer en toute sécurité.</small>
-      <div class="log" id="log-code" aria-live="polite"></div>
+      <div class="log" id="log-recherche" aria-live="polite"></div>
       <div class="composer">
-        <textarea id="in-code" placeholder="Que dois-je coder ? (Entrée pour envoyer)"></textarea>
-        <div class="btns"><button class="primary send" data-m="code">Coder</button><button class="danger stop" disabled>⏹ Arrêter</button></div>
+        <textarea id="in-recherche" placeholder="Quelle est ta question ? (Entrée pour envoyer)"></textarea>
+        <div class="btns"><button class="primary send" data-m="recherche">Chercher</button><button class="danger stop" disabled>Arrêter</button></div>
       </div>
-      <div class="row" style="margin-top:8px"><button class="clear" data-m="code">Nouveau projet</button></div>
+      <div class="row" style="margin-top:8px"><button class="clear" data-m="recherche">Nouvelle recherche</button></div>
     </div>
 
-    <!-- Minecraft -->
-    <div class="mission" id="m-mc">
-      <div class="mc">
-        <div>
-          <label for="in-mc" style="margin-top:0">Que dois-je construire ?</label>
-          <textarea id="in-mc" rows="3" placeholder="Ex. : une maison en briques avec un toit rouge et deux fenêtres"></textarea>
-          <div class="row" style="margin-top:8px">
-            <button class="primary" id="mcAsk">🧠 Imaginer le plan</button>
-            <button class="danger stop" disabled>⏹ Arrêter</button>
+    <!-- Code -->
+    <div class="mode" id="m-code" role="tabpanel">
+      <div class="subtabs" role="tablist" aria-label="Code">
+        <button role="tab" data-sub="prog" aria-selected="true">Programme</button>
+        <button role="tab" data-sub="mc" aria-selected="false">Minecraft</button>
+      </div>
+
+      <div class="sub active" id="s-prog">
+        <small>Exemples : « Code un jeu où il faut deviner un nombre », « Fais une page avec un chronomètre ». Le bouton Lancer l'essaie en toute sécurité.</small>
+        <div class="log" id="log-code" aria-live="polite"></div>
+        <div class="composer">
+          <textarea id="in-code" placeholder="Que dois-je coder ? (Entrée pour envoyer)"></textarea>
+          <div class="btns"><button class="primary send" data-m="code">Coder</button><button class="danger stop" disabled>Arrêter</button></div>
+        </div>
+        <div class="row" style="margin-top:8px"><button class="clear" data-m="code">Nouveau projet</button></div>
+      </div>
+
+      <div class="sub" id="s-mc">
+        <div class="mc">
+          <div>
+            <label for="in-mc" style="margin-top:0">Que dois-je construire ?</label>
+            <textarea id="in-mc" rows="3" placeholder="Ex. : une maison en briques avec un toit rouge et deux fenêtres"></textarea>
+            <div class="row" style="margin-top:8px">
+              <button class="primary" id="mcAsk">Imaginer le plan</button>
+              <button class="danger stop" disabled>Arrêter</button>
+            </div>
+            <label for="mcPreset">Ou prends un plan tout prêt (sans IA)</label>
+            <div class="row">
+              <select id="mcPreset" class="grow">
+                <option value="maison">Petite maison</option>
+                <option value="tour">Tour de magicien</option>
+                <option value="chateau">Château fort</option>
+                <option value="pyramide">Pyramide du désert</option>
+              </select>
+              <button id="mcLoadPreset">Charger</button>
+            </div>
+            <details>
+              <summary>Modifier le plan à la main</summary>
+              <small>Chaque pièce : <code>forme</code> (boite, cylindre, sphere, pyramide, toit), <code>bloc</code>, position <code>x y z</code>, taille <code>largeur hauteur profondeur</code>, et <code>creux</code>.</small>
+              <textarea id="mcJson" class="code" rows="12" spellcheck="false"></textarea>
+              <div class="row" style="margin-top:6px"><button id="mcApply">Appliquer</button></div>
+            </details>
+            <p id="mcMsg" class="hint"></p>
           </div>
-          <label for="mcPreset">…ou prends un plan tout prêt (sans IA)</label>
+          <div>
+            <canvas id="preview" width="640" height="480" aria-label="Aperçu de la construction"></canvas>
+            <p><span class="pill" id="mcStats">Aucun plan</span></p>
+          </div>
+        </div>
+
+        <h3>Envoyer dans Minecraft</h3>
+        <div class="row">
+          <label for="edition" style="margin:0">Mon Minecraft</label>
+          <select id="edition" style="width:auto">
+            <option value="java">Java (ordinateur)</option>
+            <option value="bedrock">Bedrock (Windows, console, tablette)</option>
+          </select>
+        </div>
+        <details open>
+          <summary>Avec le robot LeftControl (il construit tout seul)</summary>
+          <p class="hint">Lance le programme <code>leftcontrol-bot</code> sur ton ordinateur (voir son fichier LISEZMOI), puis connecte-le ici.</p>
           <div class="row">
-            <select id="mcPreset" class="grow">
-              <option value="maison">🏠 Petite maison</option>
-              <option value="tour">🧙 Tour de magicien</option>
-              <option value="chateau">🏰 Château fort</option>
-              <option value="pyramide">🔺 Pyramide du désert</option>
-            </select>
-            <button id="mcLoadPreset">Charger</button>
+            <button id="botConnect">Connecter le robot</button>
+            <button id="botBuild" class="primary" disabled>Construire dans Minecraft</button>
+            <button id="botStop" class="danger" disabled>Arrêter la construction</button>
+            <span id="botStatus" class="hint">Robot non connecté.</span>
           </div>
-          <details>
-            <summary>✏️ Modifier le plan à la main</summary>
-            <small>Chaque pièce : <code>forme</code> (boite, cylindre, sphere, pyramide, toit), <code>bloc</code>, position <code>x y z</code>, taille <code>largeur hauteur profondeur</code>, et <code>creux</code>.</small>
-            <textarea id="mcJson" class="code" rows="12" spellcheck="false"></textarea>
-            <div class="row" style="margin-top:6px"><button id="mcApply">Appliquer</button></div>
-          </details>
-          <p id="mcMsg" class="hint"></p>
-        </div>
-        <div>
-          <canvas id="preview" width="640" height="480" aria-label="Aperçu de la construction"></canvas>
-          <p><span class="pill" id="mcStats">Aucun plan</span></p>
-        </div>
+        </details>
+        <details>
+          <summary>Sans robot : commandes à copier ou pack de données</summary>
+          <ol class="steps">
+            <li>Dans ton monde, active les <b>commandes (triches)</b>.</li>
+            <li>Place-toi à l'endroit voulu : la construction apparaît juste devant toi (2 blocs plus loin, côté x et z positifs).</li>
+            <li><b>Java :</b> mets le pack de données (.zip) dans le dossier <code>datapacks</code> de ton monde, tape <code>/reload</code>, puis <code>/function leftcontrol:construire</code>.</li>
+            <li><b>Bedrock ou Java :</b> copie les commandes une par une dans le chat.</li>
+          </ol>
+          <div class="row">
+            <button id="dlPack">Pack de données Java (.zip)</button>
+            <button id="dlFn">Fichier .mcfunction</button>
+            <button id="copyCmds">Copier toutes les commandes</button>
+          </div>
+          <textarea id="cmds" class="code" rows="8" readonly style="margin-top:8px" aria-label="Commandes Minecraft"></textarea>
+        </details>
       </div>
+    </div>
 
-      <h2 style="margin-top:16px">📦 L'envoyer dans Minecraft</h2>
-      <div class="row">
-        <label for="edition" style="margin:0">Mon Minecraft :</label>
-        <select id="edition" style="width:auto">
-          <option value="java">Java (ordinateur)</option>
-          <option value="bedrock">Bedrock (Windows, console, tablette)</option>
-        </select>
+    <!-- Business -->
+    <div class="mode" id="m-business" role="tabpanel">
+      <div class="chips" aria-label="Modèles de demandes">
+        <button data-tpl="Fais-moi un business plan simple pour ce projet : ">Business plan</button>
+        <button data-tpl="Écris un email professionnel et poli pour : ">Email</button>
+        <button data-tpl="Propose 10 noms et 5 slogans pour : ">Noms et slogans</button>
+        <button data-tpl="Aide-moi à fixer un prix. Ce que je vends : ... Ce que ça me coûte : ... Combien j'en vends par mois : ... Calcule le prix conseillé, la marge et le bénéfice.">Prix et marge</button>
+        <button data-tpl="Fais une analyse forces / faiblesses / opportunités / menaces (SWOT) de : ">Analyse SWOT</button>
+        <button data-tpl="Donne-moi 5 idées pour trouver mes premiers clients pour : ">Trouver des clients</button>
       </div>
-
-      <details open>
-        <summary>🤖 Avec le robot LeftControl (il construit tout seul)</summary>
-        <p class="hint">Lance le programme <code>leftcontrol-bot</code> sur ton ordinateur (voir son fichier LISEZMOI), puis connecte-le ici.</p>
-        <div class="row">
-          <button id="botConnect">🔌 Connecter le robot</button>
-          <button id="botBuild" class="primary" disabled>🏗️ Construire dans Minecraft</button>
-          <button id="botStop" class="danger" disabled>⏹ Arrêter la construction</button>
-          <span id="botStatus" class="hint">Robot non connecté.</span>
-        </div>
-      </details>
-
-      <details>
-        <summary>📋 Sans robot : commandes à copier ou pack de données</summary>
-        <ol class="steps">
-          <li>Dans ton monde, active les <b>commandes (triches)</b>.</li>
-          <li>Place-toi à l'endroit voulu : la construction apparaît juste devant toi (2 blocs plus loin, côté x et z positifs).</li>
-          <li><b>Java :</b> télécharge le pack de données, mets le fichier .zip dans le dossier <code>datapacks</code> de ton monde, tape <code>/reload</code>, puis <code>/function leftcontrol:construire</code>.</li>
-          <li><b>Bedrock (ou Java) :</b> copie les commandes une par une dans le chat.</li>
-        </ol>
-        <div class="row">
-          <button id="dlPack">💾 Pack de données Java (.zip)</button>
-          <button id="dlFn">📄 Fichier .mcfunction</button>
-          <button id="copyCmds">📋 Copier toutes les commandes</button>
-        </div>
-        <textarea id="cmds" class="code" rows="8" readonly style="margin-top:8px"></textarea>
-      </details>
+      <div class="log" id="log-business" aria-live="polite"></div>
+      <div class="composer">
+        <textarea id="in-business" placeholder="Décris ton projet ou ta question business (Entrée pour envoyer)"></textarea>
+        <div class="btns"><button class="primary send" data-m="business">Envoyer</button><button class="danger stop" disabled>Arrêter</button></div>
+      </div>
+      <div class="row" style="margin-top:8px"><button class="clear" data-m="business">Nouveau projet</button></div>
     </div>
   </section>
 </main>
+<footer>LeftControl fonctionne entièrement dans ton navigateur. Le mode Recherche consulte Wikipédia.</footer>
+</div>
 
 <script type="module">
 import * as B from "./batisseur.js";
 
 const WEBLLM_URL = "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.87/+esm";
+const ACCENT = [3, 187, 133];
 const $ = (id) => document.getElementById(id);
+const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// ---------- Stockage local (protégé : peut échouer en navigation privée) ----------
+// =====================================================================
+//  Fond : trou noir + tesseract
+// =====================================================================
+const cosmos = $("cosmos"), cx = cosmos.getContext("2d");
+let W = 0, H = 0, DPR = 1, etoiles = [], disque = [];
+
+function initCosmos() {
+  DPR = Math.min(2, devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cosmos.width = W * DPR; cosmos.height = H * DPR;
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  etoiles = Array.from({ length: Math.round((W * H) / 2600) }, () => ({ x: rnd(0, W), y: rnd(0, H), r: rnd(.2, 1.3), p: rnd(0, 6.28), v: rnd(.3, 1.4) }));
+  disque = Array.from({ length: 1400 }, () => {
+    const t = Math.random() ** 1.6; // plus dense près du centre
+    return { r: 1.55 + t * 2.9, a: rnd(0, 6.28), s: rnd(.6, 1.4), z: rnd(-.06, .06) };
+  });
+}
+
+function trouNoir(t) {
+  const R = Math.min(W, H) * (W < 700 ? .11 : .085);
+  const ox = W < 700 ? W * .5 : W * .68, oy = H * .52, incl = .26;
+  // étoiles (légèrement déviées près du trou noir)
+  for (const e of etoiles) {
+    let x = e.x, y = e.y;
+    const dx = x - ox, dy = y - oy, d = Math.hypot(dx, dy);
+    if (d < R * 6) { const k = (R * R * 1.6) / Math.max(d, R); x += (dx / d) * k; y += (dy / d) * k; }
+    if (Math.hypot(x - ox, y - oy) < R * 1.05) continue;
+    const a = .35 + .45 * Math.sin(e.p + t * e.v);
+    cx.fillStyle = `rgba(210,255,240,${a})`;
+    cx.fillRect(x, y, e.r, e.r);
+  }
+  // halo
+  const halo = cx.createRadialGradient(ox, oy, R * .8, ox, oy, R * 6);
+  halo.addColorStop(0, "rgba(3,187,133,.20)"); halo.addColorStop(.4, "rgba(3,187,133,.05)"); halo.addColorStop(1, "rgba(3,187,133,0)");
+  cx.fillStyle = halo; cx.fillRect(0, 0, W, H);
+
+  // Disque d'accrétion : bandes elliptiques (arrière, image déviée, avant) + particules.
+  const RIN = R * 1.55, ROUT = R * 4.4;
+  const bandes = (debut, fin, lens) => {
+    for (let r = RIN; r < ROUT; r += R * .045) {
+      const u = (r - RIN) / (ROUT - RIN);                   // 0 = bord intérieur (chaud), 1 = extérieur
+      const al = (1 - u) ** 1.6 * (lens ? .16 : .34) * (0.85 + .15 * Math.sin(r * .9 - t * 2));
+      const c = [ACCENT[0] + Math.round(190 * (1 - u) ** 3), ACCENT[1] + Math.round(68 * (1 - u) ** 2), ACCENT[2] + Math.round(110 * (1 - u) ** 2)];
+      cx.strokeStyle = `rgba(${c.join(",")},${al})`;
+      cx.lineWidth = R * .05;
+      cx.beginPath();
+      if (lens) { // le dessus du disque, plié par la gravité autour du trou noir
+        const k = R * 1.08 + (r - RIN) * .42;
+        cx.ellipse(ox, oy, k * 1.02, k, 0, debut, fin);
+      } else cx.ellipse(ox, oy, r, r * incl, 0, debut, fin);
+      cx.stroke();
+    }
+  };
+  cx.globalCompositeOperation = "lighter";
+  bandes(Math.PI, Math.PI * 2, false);   // arrière du disque
+  bandes(Math.PI * 1.04, Math.PI * 1.96, true); // image déviée au-dessus
+  bandes(Math.PI * .08, Math.PI * .92, true);   // image déviée en dessous (plus faible)
+  const point = (p) => {
+    const r = p.r * R, a = p.a + t * .35 * p.s / (p.r ** 1.5);
+    return { x: ox + Math.cos(a) * r, y: oy + Math.sin(a) * r * incl + p.z * R * .4, derriere: Math.sin(a) < 0, u: (p.r - 1.55) / 2.9, a };
+  };
+  const particules = (derriere) => {
+    for (const p of disque) {
+      const q = point(p);
+      if (q.derriere !== derriere) continue;
+      const dop = .5 + .5 * Math.cos(q.a + 1.2); // effet Doppler : un côté plus brillant
+      cx.fillStyle = `rgba(${200 - Math.round(150 * q.u)},255,${230 - Math.round(60 * q.u)},${(1 - q.u) * .55 * dop})`;
+      cx.fillRect(q.x, q.y, 1.6, 1.6);
+    }
+  };
+  particules(true);
+  cx.globalCompositeOperation = "source-over";
+  // anneau de photons + horizon
+  const anneau = cx.createRadialGradient(ox, oy, R * .92, ox, oy, R * 1.35);
+  anneau.addColorStop(0, "rgba(0,0,0,1)"); anneau.addColorStop(.12, "rgba(190,255,235,.95)");
+  anneau.addColorStop(.3, "rgba(3,187,133,.5)"); anneau.addColorStop(1, "rgba(3,187,133,0)");
+  cx.fillStyle = anneau; cx.beginPath(); cx.arc(ox, oy, R * 1.35, 0, 6.29); cx.fill();
+  cx.fillStyle = "#000"; cx.beginPath(); cx.arc(ox, oy, R * .97, 0, 6.29); cx.fill();
+  cx.globalCompositeOperation = "lighter";
+  bandes(0, Math.PI, false);             // avant du disque, devant le trou noir
+  particules(false);
+  cx.globalCompositeOperation = "source-over";
+}
+
+// --- Tesseract (hypercube en 4 dimensions) ---
+const SOMMETS = [], ARETES = [];
+for (let i = 0; i < 16; i++) SOMMETS.push([0, 1, 2, 3].map((b) => (i >> b & 1 ? 1 : -1)));
+for (let i = 0; i < 16; i++) for (let b = 0; b < 4; b++) { const j = i ^ (1 << b); if (i < j) ARETES.push([i, j]); }
+
+function tesseract(ctx, ox, oy, taille, t, alpha, epais) {
+  const a = t * .45, b = t * .3, c = t * .21;
+  const pts = SOMMETS.map(([x, y, z, w]) => {
+    // rotations XW, YZ et ZW
+    [x, w] = [x * Math.cos(a) - w * Math.sin(a), x * Math.sin(a) + w * Math.cos(a)];
+    [y, z] = [y * Math.cos(b) - z * Math.sin(b), y * Math.sin(b) + z * Math.cos(b)];
+    [z, w] = [z * Math.cos(c) - w * Math.sin(c), z * Math.sin(c) + w * Math.cos(c)];
+    const k4 = 1 / (3 - w); x *= k4; y *= k4; z *= k4;          // projection 4D -> 3D
+    const k3 = 1 / (2.6 - z);                                     // projection 3D -> 2D
+    return [ox + x * k3 * taille, oy + y * k3 * taille, w];
+  });
+  ctx.lineWidth = epais; ctx.lineCap = "round";
+  for (const [i, j] of ARETES) {
+    const prof = (pts[i][2] + pts[j][2]) / 4 + .5; // les arêtes « proches » en 4D sont plus vives
+    ctx.strokeStyle = `rgba(${ACCENT.join(",")},${alpha * (.35 + .65 * prof)})`;
+    ctx.beginPath(); ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[j][0], pts[j][1]); ctx.stroke();
+  }
+  ctx.fillStyle = `rgba(190,255,235,${alpha})`;
+  for (const p of pts) { ctx.beginPath(); ctx.arc(p[0], p[1], epais * 1.3, 0, 6.29); ctx.fill(); }
+}
+
+const logo = $("logo"), lx = logo.getContext("2d");
+function image(ms) {
+  const t = ms / 1000;
+  cx.fillStyle = "#020405"; cx.fillRect(0, 0, W, H);
+  trouNoir(t);
+  const T = Math.min(W, H);
+  cx.save(); cx.shadowColor = "rgba(3,187,133,.6)"; cx.shadowBlur = 12;
+  tesseract(cx, W < 700 ? W * .78 : W * .2, W < 700 ? H * .9 : H * .3, T * (W < 700 ? .3 : .42), t * .6, W < 700 ? .3 : .42, 1.4);
+  cx.restore();
+  lx.clearRect(0, 0, 104, 104);
+  tesseract(lx, 52, 52, 78, t, 1, 2.2);
+}
+let derniere = 0;
+function boucle(ms) {
+  if (ms - derniere > 32) { image(ms); derniere = ms; } // ~30 images par seconde
+  requestAnimationFrame(boucle);
+}
+initCosmos();
+addEventListener("resize", () => { initCosmos(); if (calme) image(4000); });
+if (calme) image(4000); else requestAnimationFrame(boucle);
+
+// =====================================================================
+//  Stockage local (protégé : peut échouer en navigation privée)
+// =====================================================================
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 
-// ---------- Personnalité et missions ----------
-const PERSONA_DEFAUT = "Tu t'appelles LeftControl. Tu es un agent IA joyeux et serviable qui vit dans l'ordinateur de l'utilisateur. Tu parles français, avec des phrases simples et claires. Si tu ne sais pas quelque chose, tu le dis.";
+// =====================================================================
+//  Personnalité et modes
+// =====================================================================
+const PERSONA_DEFAUT = "Tu t'appelles LeftControl. Tu es un agent IA précis, calme et serviable, qui vit dans l'ordinateur de l'utilisateur. Tu parles français, avec des phrases claires. Tu n'utilises jamais d'émojis. Si tu ne sais pas quelque chose, tu le dis.";
 
 const MISSIONS = {
-  chat: "Mission : discuter et répondre aux questions. Réponds de façon courte (quelques phrases) sauf si on te demande plus.",
-  code: "Mission : coder. Quand on te demande un programme, réponds par une phrase d'explication, puis UN SEUL bloc de code complet. Pour un jeu ou une page, écris un fichier HTML complet (avec CSS et JavaScript dedans) dans un bloc ```html, qui marche tout seul sans rien installer. Quand on te demande une modification, renvoie le fichier complet modifié.",
-  mc: `Mission : dessiner des plans de construction Minecraft. Réponds UNIQUEMENT avec un objet JSON : {"nom": "...", "pieces": [...]}.
+  recherche: "Mode Recherche : tu expliques des sujets de façon claire et structurée (titres courts, listes). Quand des sources te sont fournies, appuie-toi d'abord sur elles et cite-les avec leur numéro, par exemple [1]. N'invente jamais de source.",
+  motscles: 'Donne uniquement 2 à 5 mots-clés pour chercher la réponse dans Wikipédia, en JSON : {"recherche": "..."}.',
+  code: "Mode Code : quand on te demande un programme, réponds par une phrase d'explication, puis UN SEUL bloc de code complet. Pour un jeu ou une page, écris un fichier HTML complet (avec CSS et JavaScript dedans) dans un bloc ```html, qui marche tout seul sans rien installer. Quand on te demande une modification, renvoie le fichier complet modifié.",
+  business: "Mode Business : tu es un conseiller en entreprise pratique. Tu aides à monter des projets, écrire des emails professionnels, fixer des prix, trouver des noms et des clients. Réponds de façon structurée (titres courts, listes, tableaux simples si utile). Pour les calculs, montre le détail. Reste réaliste et honnête sur les risques.",
+  mc: `Mode Code, construction Minecraft. Réponds UNIQUEMENT avec un objet JSON : {"nom": "...", "pieces": [...]}.
 Chaque pièce : {"forme", "bloc", "x", "y", "z", "largeur", "hauteur", "profondeur", "creux"}.
 - x, y, z : coin de départ (y = hauteur, 0 = niveau du sol). largeur va vers x, hauteur vers y, profondeur vers z.
 - formes : "boite" (pavé), "cylindre" (tour ronde verticale, diamètre = largeur), "sphere" (diamètre = largeur), "pyramide" (base largeur×profondeur), "toit" (toit à deux pentes, faîte le long de x).
@@ -249,7 +453,9 @@ persona.oninput = () => store.set("lc-persona", persona.value);
 $("resetPersona").onclick = () => { persona.value = PERSONA_DEFAUT; store.set("lc-persona", PERSONA_DEFAUT); };
 const systeme = (m) => persona.value.trim() + "\n\n" + MISSIONS[m];
 
-// ---------- Cerveau (IA locale WebLLM) ----------
+// =====================================================================
+//  Cerveau (IA locale WebLLM)
+// =====================================================================
 let webllm = null, engine = null, engineModel = null, loading = false, busy = false;
 const modelSel = $("model");
 modelSel.value = store.get("lc-model", modelSel.value);
@@ -258,10 +464,10 @@ modelSel.onchange = () => { store.set("lc-model", modelSel.value); if (engineMod
 function setStatus(text, cls = "") { const s = $("brainStatus"); s.textContent = text; s.className = cls; }
 
 async function reveiller() {
-  if (loading) return;
+  if (loading) throw new Error("LeftControl est encore en train de se réveiller, patiente un peu.");
   if (engine && engineModel === modelSel.value) return;
   if (!("gpu" in navigator)) {
-    setStatus("Ce navigateur ne peut pas faire tourner l'IA (WebGPU manquant). Essaie avec Chrome ou Edge à jour, sur ordinateur.", "st-err");
+    setStatus("Ce navigateur ne peut pas faire tourner l'IA (WebGPU manquant). Essaie Chrome ou Edge à jour, sur ordinateur.", "st-err");
     throw new Error("WebGPU indisponible");
   }
   loading = true; $("wake").disabled = true;
@@ -271,13 +477,15 @@ async function reveiller() {
     if (engine) { await engine.unload(); engine = null; }
     engine = await webllm.CreateMLCEngine(modelSel.value, {
       initProgressCallback: (p) => {
-        $("bar").style.width = Math.round((p.progress || 0) * 100) + "%";
-        setStatus("Réveil en cours… " + Math.round((p.progress || 0) * 100) + " % (la première fois, ça peut prendre plusieurs minutes)", "st-warn");
+        const pc = Math.round((p.progress || 0) * 100);
+        $("bar").style.width = pc + "%";
+        setStatus(`Réveil en cours… ${pc} %. La première fois, cela peut prendre plusieurs minutes.`, "st-warn");
       },
     });
     engineModel = modelSel.value;
     $("bar").style.width = "100%";
-    setStatus("✅ LeftControl est réveillé et prêt !", "st-ok");
+    setStatus("LeftControl est réveillé et prêt.", "st-ok");
+    $("wake").textContent = "Réveillé";
   } catch (e) {
     engine = null; engineModel = null;
     setStatus("Impossible de réveiller LeftControl : " + (e?.message || e) + ". Essaie un cerveau plus léger.", "st-err");
@@ -286,7 +494,6 @@ async function reveiller() {
 }
 $("wake").onclick = () => reveiller().catch(() => {});
 
-// Génère une réponse en direct. onTexte reçoit le texte complet au fur et à mesure.
 async function generer(mission, historique, onTexte, options = {}) {
   await reveiller();
   const chunks = await engine.chat.completions.create({
@@ -304,20 +511,71 @@ function setBusy(on) {
   document.querySelectorAll(".send, #mcAsk").forEach((b) => (b.disabled = on));
   document.querySelectorAll(".stop").forEach((b) => (b.disabled = !on));
 }
-document.querySelectorAll(".stop").forEach((b) => (b.onclick = () => engine?.interruptGenerate()));
+let stopDemande = false;
+document.querySelectorAll(".stop").forEach((b) => (b.onclick = () => { stopDemande = true; engine?.interruptGenerate(); }));
 
-// ---------- Onglets ----------
-document.querySelectorAll("[data-tab]").forEach((t) => (t.onclick = () => {
-  document.querySelectorAll("[data-tab]").forEach((x) => x.setAttribute("aria-selected", x === t));
-  document.querySelectorAll(".mission").forEach((m) => m.classList.toggle("active", m.id === "m-" + t.dataset.tab));
+// =====================================================================
+//  Modes et sous-onglets
+// =====================================================================
+function choisirMode(nom) {
+  document.querySelectorAll("[data-mode]").forEach((x) => x.setAttribute("aria-selected", x.dataset.mode === nom));
+  document.querySelectorAll(".mode").forEach((m) => m.classList.toggle("active", m.id === "m-" + nom));
+  store.set("lc-mode", nom);
+}
+document.querySelectorAll("[data-mode]").forEach((t) => (t.onclick = () => choisirMode(t.dataset.mode)));
+document.querySelectorAll("[data-sub]").forEach((t) => (t.onclick = () => {
+  document.querySelectorAll("[data-sub]").forEach((x) => x.setAttribute("aria-selected", x === t));
+  document.querySelectorAll(".sub").forEach((s) => s.classList.toggle("active", s.id === "s-" + t.dataset.sub));
 }));
+document.querySelectorAll("[data-tpl]").forEach((b) => (b.onclick = () => { const i = $("in-business"); i.value = b.dataset.tpl; i.focus(); i.setSelectionRange(i.value.length, i.value.length); }));
 
-// ---------- Affichage des messages (avec blocs de code) ----------
+// =====================================================================
+//  Affichage : texte façon Markdown (sûr) + blocs de code
+// =====================================================================
+const echapper = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function enLigne(s) {
+  return echapper(s)
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    .replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g, "$1<i>$2</i>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[(\d+)\]/g, '<b class="st-ok">[$1]</b>');
+}
+function markdown(texte) {
+  const out = [];
+  let liste = null, para = [], table = [];
+  const fermerTexte = () => {
+    if (para.length) { out.push("<p>" + para.map(enLigne).join("<br>") + "</p>"); para = []; }
+    if (liste) { out.push(`</${liste}>`); liste = null; }
+  };
+  const fermerTable = () => {
+    if (!table.length) return;
+    const rows = table.filter((r) => !/^\s*\|?[\s:|-]+\|?\s*$/.test(r)).map((r) => r.trim().replace(/^\||\|$/g, "").split("|"));
+    out.push("<table>" + rows.map((c, i) => "<tr>" + c.map((x) => (i ? "<td>" : "<th>") + enLigne(x.trim()) + (i ? "</td>" : "</th>")).join("") + "</tr>").join("") + "</table>");
+    table = [];
+  };
+  const ouvrirListe = (type) => {
+    if (para.length) { out.push("<p>" + para.map(enLigne).join("<br>") + "</p>"); para = []; }
+    if (liste !== type) { if (liste) out.push(`</${liste}>`); out.push(`<${type}>`); liste = type; }
+  };
+  for (const l of texte.split("\n")) {
+    let m;
+    if (/^\s*\|.*\|\s*$/.test(l)) { fermerTexte(); table.push(l); continue; }
+    fermerTable();
+    if ((m = /^#{1,6}\s+(.*)/.exec(l))) { fermerTexte(); out.push("<h4>" + enLigne(m[1]) + "</h4>"); }
+    else if ((m = /^\s*[-*•]\s+(.*)/.exec(l))) { ouvrirListe("ul"); out.push("<li>" + enLigne(m[1]) + "</li>"); }
+    else if ((m = /^\s*\d+[.)]\s+(.*)/.exec(l))) { ouvrirListe("ol"); out.push("<li>" + enLigne(m[1]) + "</li>"); }
+    else if (!l.trim()) fermerTexte();
+    else { if (liste) { out.push(`</${liste}>`); liste = null; } para.push(l); }
+  }
+  fermerTexte(); fermerTable();
+  return out.join("");
+}
+
 function addMsg(log, kind, text, who) {
   const d = document.createElement("div");
   d.className = "msg " + kind;
   if (who) { const w = document.createElement("span"); w.className = "who"; w.textContent = who; d.appendChild(w); }
-  const body = document.createElement("div"); d.appendChild(body);
+  const body = document.createElement("div"); body.className = "md"; d.appendChild(body);
   if (text) body.textContent = text;
   log.appendChild(d); log.scrollTop = log.scrollHeight;
   return body;
@@ -327,19 +585,22 @@ function rendre(body, texte, final) {
   body.innerHTML = "";
   const re = /```([\w+-]*)\n?([\s\S]*?)(```|$)/g;
   let last = 0, m;
+  const ajouterTexte = (t) => { if (t.trim()) { const d = document.createElement("div"); d.innerHTML = markdown(t.trim()); body.appendChild(d); } };
   while ((m = re.exec(texte))) {
-    if (m.index > last) { const p = document.createElement("p"); p.textContent = texte.slice(last, m.index).trim(); if (p.textContent) body.appendChild(p); }
+    ajouterTexte(texte.slice(last, m.index));
     body.appendChild(blocCode(m[1] || "texte", m[2], final && m[3] === "```"));
     last = re.lastIndex;
     if (!m[0]) break;
   }
-  const reste = texte.slice(last).trim();
-  if (reste) { const p = document.createElement("p"); p.textContent = reste; body.appendChild(p); }
+  ajouterTexte(texte.slice(last));
 }
 
 function telecharger(nom, blob) {
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nom; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function copier(btn, texte, label) {
+  navigator.clipboard?.writeText(texte).then(() => { btn.textContent = "Copié"; setTimeout(() => (btn.textContent = label), 1500); });
 }
 
 function blocCode(lang, code, complet) {
@@ -351,48 +612,108 @@ function blocCode(lang, code, complet) {
   const mk = (txt, fn) => { const b = document.createElement("button"); b.textContent = txt; b.onclick = fn; bar.appendChild(b); return b; };
   const lg = lang.toLowerCase();
   if (["html", "javascript", "js"].includes(lg)) {
-    mk("▶ Lancer", () => {
+    mk("Lancer", () => {
       let f = box.querySelector("iframe");
       if (!f) { f = document.createElement("iframe"); f.className = "run"; f.setAttribute("sandbox", "allow-scripts"); f.title = "Résultat du programme"; box.appendChild(f); }
       f.srcdoc = lg === "html" ? code : `<!doctype html><meta charset="utf-8"><body><script>${code.replace(/<\/script/gi, "<\\/script")}<\/script></body>`;
     });
   }
-  mk("📋 Copier", (e) => { navigator.clipboard?.writeText(code).then(() => { e.target.textContent = "✅ Copié"; setTimeout(() => (e.target.textContent = "📋 Copier"), 1500); }); });
+  mk("Copier", (e) => copier(e.target, code, "Copier"));
   const ext = { html: "html", javascript: "js", js: "js", python: "py", py: "py", css: "css", json: "json" }[lg] || "txt";
-  mk("💾 Télécharger", () => telecharger("leftcontrol." + ext, new Blob([code], { type: "text/plain" })));
+  mk("Télécharger", () => telecharger("leftcontrol." + ext, new Blob([code], { type: "text/plain" })));
   box.appendChild(bar);
   return box;
 }
 
-// ---------- Missions Discuter et Coder ----------
-const historiques = { chat: store.get("lc-hist-chat", []), code: store.get("lc-hist-code", []) };
-const LIMITE_HISTO = 8; // l'IA locale a une petite mémoire : on garde les derniers messages
+// =====================================================================
+//  Recherche dans Wikipédia (sans clé)
+// =====================================================================
+async function wiki(params) {
+  const u = new URL("https://fr.wikipedia.org/w/api.php");
+  for (const [k, v] of Object.entries({ ...params, format: "json", origin: "*" })) u.searchParams.set(k, v);
+  const r = await fetch(u);
+  if (!r.ok) throw new Error("Wikipédia ne répond pas");
+  return r.json();
+}
+async function chercherSources(question, statut) {
+  statut("Je choisis les mots-clés…");
+  let mots = question;
+  try {
+    const r = await generer("motscles", [{ role: "user", content: question }], () => {}, {
+      temperature: 0, max_tokens: 60,
+      response_format: { type: "json_object", schema: JSON.stringify({ type: "object", properties: { recherche: { type: "string" } }, required: ["recherche"] }) },
+    });
+    mots = JSON.parse(r.slice(r.indexOf("{"), r.lastIndexOf("}") + 1)).recherche || question;
+  } catch (e) { if (stopDemande) throw e; }
+  if (stopDemande) throw new Error("arrêté");
+  statut(`Je cherche « ${mots} » dans Wikipédia…`);
+  const s = await wiki({ action: "query", list: "search", srsearch: mots, srlimit: "3" });
+  const ids = (s.query?.search || []).map((x) => x.pageid);
+  if (!ids.length) return [];
+  statut("Je lis les articles…");
+  const e = await wiki({ action: "query", prop: "extracts|info", inprop: "url", exintro: "1", explaintext: "1", exlimit: "3", pageids: ids.join("|") });
+  return ids.map((id) => e.query?.pages?.[id]).filter((p) => p && p.extract)
+    .map((p) => ({ titre: p.title, url: p.fullurl, texte: p.extract.slice(0, 1500) }));
+}
 
-for (const m of ["chat", "code"]) {
+// =====================================================================
+//  Modes conversationnels : Recherche, Code (programme), Business
+// =====================================================================
+const historiques = {};
+const LIMITE_HISTO = 8; // l'IA locale a une petite mémoire : on garde les derniers messages
+const ACCUEIL = {
+  recherche: "Réveille LeftControl, puis pose ta question. Il cherche dans Wikipédia et cite ses sources.",
+  code: "Décris le programme que tu veux, LeftControl l'écrit pour toi.",
+  business: "Choisis un modèle de demande ci-dessus ou décris ton projet.",
+};
+
+function afficherSources(body, sources) {
+  if (!sources?.length) return;
+  const d = document.createElement("div"); d.className = "sources";
+  d.innerHTML = "Sources :<ol>" + sources.map((s) => `<li><a href="${echapper(s.url)}" target="_blank" rel="noopener">${echapper(s.titre)}</a> (Wikipédia)</li>`).join("") + "</ol>";
+  body.appendChild(d);
+}
+
+for (const m of ["recherche", "code", "business"]) {
+  historiques[m] = store.get("lc-hist-" + m, []);
   const log = $("log-" + m);
   for (const h of historiques[m]) {
     if (h.role === "user") addMsg(log, "user", h.content, "Toi");
-    else rendre(addMsg(log, "agent", "", "LeftControl"), h.content, true);
+    else { const b = addMsg(log, "agent", "", "LeftControl"); rendre(b, h.content, true); afficherSources(b, h.sources); }
   }
-  if (!historiques[m].length) addMsg(log, "info", m === "chat" ? "Réveille LeftControl, puis écris-lui ici." : "Décris le programme que tu veux, LeftControl l'écrit pour toi.");
+  if (!historiques[m].length) addMsg(log, "info", ACCUEIL[m]);
   const input = $("in-" + m);
+
   const envoyer = async () => {
     const texte = input.value.trim();
     if (!texte || busy) return;
     input.value = "";
     addMsg(log, "user", texte, "Toi");
     historiques[m].push({ role: "user", content: texte });
-    const body = addMsg(log, "agent", "…", "LeftControl");
-    setBusy(true);
+    const body = addMsg(log, "agent", "", "LeftControl");
+    const statut = (t) => { body.innerHTML = `<span class="status-line">${echapper(t)}</span>`; };
+    statut("LeftControl réfléchit…");
+    setBusy(true); stopDemande = false;
     try {
-      const rep = await generer(m, historiques[m].slice(-LIMITE_HISTO), (t) => { rendre(body, t, false); log.scrollTop = log.scrollHeight; },
-        { temperature: m === "code" ? 0.3 : 0.7, max_tokens: m === "code" ? 3000 : 1024 });
+      let sources = [], messages = historiques[m].slice(-LIMITE_HISTO).map(({ role, content }) => ({ role, content }));
+      if (m === "recherche" && $("useWiki").checked) {
+        try { sources = await chercherSources(texte, statut); }
+        catch (e) { if (stopDemande) throw e; sources = []; }
+        if (sources.length) {
+          const bloc = sources.map((s, i) => `[${i + 1}] ${s.titre}\n${s.texte}`).join("\n\n");
+          messages = [...messages.slice(0, -1), { role: "user", content: `Sources trouvées dans Wikipédia :\n\n${bloc}\n\nQuestion : ${texte}\n\nRéponds en t'appuyant sur ces sources et cite-les avec [1], [2]…` }];
+        } else statut("Rien trouvé dans Wikipédia, je réponds avec ce que je sais…");
+      }
+      if (stopDemande) throw new Error("arrêté");
+      const rep = await generer(m, messages, (t) => { rendre(body, t, false); log.scrollTop = log.scrollHeight; },
+        { temperature: m === "code" ? 0.3 : 0.6, max_tokens: m === "code" ? 3000 : 1500 });
       rendre(body, rep, true);
-      historiques[m].push({ role: "assistant", content: rep });
+      afficherSources(body, sources);
+      historiques[m].push({ role: "assistant", content: rep, ...(sources.length ? { sources: sources.map(({ titre, url }) => ({ titre, url })) } : {}) });
       store.set("lc-hist-" + m, historiques[m].slice(-20));
     } catch (e) {
       historiques[m].pop(); body.parentElement.remove();
-      addMsg(log, "error", "Oups : " + (e?.message || e));
+      addMsg(log, stopDemande ? "info" : "error", stopDemande ? "Arrêté." : "Oups : " + (e?.message || e));
     } finally { setBusy(false); }
   };
   document.querySelector(`.send[data-m="${m}"]`).onclick = envoyer;
@@ -403,7 +724,9 @@ for (const m of ["chat", "code"]) {
   };
 }
 
-// ---------- Mission Minecraft ----------
+// =====================================================================
+//  Code > Minecraft
+// =====================================================================
 let planActuel = null, carteActuelle = null;
 const edition = $("edition");
 edition.value = store.get("lc-edition", "java");
@@ -413,8 +736,8 @@ function chargerPlan(brut, source) {
   try {
     const { plan, avertissements } = B.nettoyerPlan(brut);
     const carte = B.voxeliser(plan);
-    const pleins = [...carte.values()].filter((b) => b !== "air").length;
     if (carte.size > 120000) throw new Error("Construction trop grande.");
+    const pleins = [...carte.values()].filter((b) => b !== "air").length;
     planActuel = plan; carteActuelle = carte;
     $("mcJson").value = JSON.stringify(plan, null, 1);
     B.dessiner($("preview"), carte);
@@ -422,7 +745,7 @@ function chargerPlan(brut, source) {
     majCommandes();
     $("mcStats").textContent = `${plan.nom} — ${pleins} blocs, ${cmdsActuelles().length} commandes`;
     store.set("lc-plan", plan);
-  } catch (e) { $("mcMsg").textContent = "⚠️ " + e.message; }
+  } catch (e) { $("mcMsg").textContent = "Attention : " + e.message; }
 }
 const cmdsActuelles = () => (carteActuelle ? B.commandes(carteActuelle, edition.value) : []);
 function majCommandes() {
@@ -431,27 +754,26 @@ function majCommandes() {
 }
 
 $("mcLoadPreset").onclick = () => chargerPlan(structuredClone(B.PLANS[$("mcPreset").value]), "Plan chargé.");
-$("mcApply").onclick = () => { try { chargerPlan(JSON.parse($("mcJson").value), "Plan modifié."); } catch (e) { $("mcMsg").textContent = "⚠️ JSON invalide : " + e.message; } };
+$("mcApply").onclick = () => { try { chargerPlan(JSON.parse($("mcJson").value), "Plan modifié."); } catch (e) { $("mcMsg").textContent = "JSON invalide : " + e.message; } };
 
 $("mcAsk").onclick = async () => {
   const demande = $("in-mc").value.trim();
   if (!demande || busy) return;
-  setBusy(true); $("mcMsg").textContent = "LeftControl réfléchit…";
+  setBusy(true); stopDemande = false; $("mcMsg").textContent = "LeftControl réfléchit…";
   try {
     const rep = await generer("mc", [{ role: "user", content: demande }], (t) => ($("mcMsg").textContent = `LeftControl dessine le plan… (${t.length} caractères)`),
       { temperature: 0.4, max_tokens: 2048, response_format: { type: "json_object", schema: JSON.stringify(B.SCHEMA_PLAN) } });
-    const debut = rep.indexOf("{"), fin = rep.lastIndexOf("}");
-    chargerPlan(JSON.parse(rep.slice(debut, fin + 1)), "Voici mon plan ! Tu peux le modifier à la main si besoin.");
+    chargerPlan(JSON.parse(rep.slice(rep.indexOf("{"), rep.lastIndexOf("}") + 1)), "Voici mon plan. Tu peux le modifier à la main si besoin.");
   } catch (e) {
-    $("mcMsg").textContent = "⚠️ LeftControl s'est emmêlé dans son plan (" + (e?.message || e) + "). Réessaie, décris plus simplement, ou prends un plan tout prêt.";
+    $("mcMsg").textContent = stopDemande ? "Arrêté." : "LeftControl s'est emmêlé dans son plan (" + (e?.message || e) + "). Réessaie, décris plus simplement, ou prends un plan tout prêt.";
   } finally { setBusy(false); }
 };
 
 $("dlPack").onclick = () => carteActuelle && telecharger("leftcontrol-construction.zip", B.packDeDonnees(B.commandes(carteActuelle, "java")));
 $("dlFn").onclick = () => carteActuelle && telecharger("construire.mcfunction", new Blob([cmdsActuelles().join("\n") + "\n"], { type: "text/plain" }));
-$("copyCmds").onclick = (e) => navigator.clipboard?.writeText($("cmds").value).then(() => { e.target.textContent = "✅ Copié"; setTimeout(() => (e.target.textContent = "📋 Copier toutes les commandes"), 1500); });
+$("copyCmds").onclick = (e) => copier(e.target, $("cmds").value, "Copier toutes les commandes");
 
-// ---------- Robot LeftControl (programme leftcontrol-bot sur l'ordinateur) ----------
+// --- Robot LeftControl (programme leftcontrol-bot sur l'ordinateur) ---
 const bot = { ws: null, pret: false };
 function botStatus(t, cls = "hint") { const s = $("botStatus"); s.textContent = t; s.className = cls; }
 $("botConnect").onclick = () => {
@@ -459,7 +781,7 @@ $("botConnect").onclick = () => {
   let ws;
   try { ws = new WebSocket("ws://localhost:3007"); } catch { botStatus("Connexion impossible.", "st-err"); return; }
   botStatus("Connexion au robot…", "st-warn");
-  ws.onopen = () => { bot.ws = ws; $("botConnect").textContent = "🔌 Déconnecter le robot"; };
+  ws.onopen = () => { bot.ws = ws; $("botConnect").textContent = "Déconnecter le robot"; };
   ws.onmessage = (ev) => {
     let m; try { m = JSON.parse(ev.data); } catch { return; }
     if (m.type === "etat") {
@@ -467,11 +789,11 @@ $("botConnect").onclick = () => {
       if (m.edition && m.edition !== edition.value) { edition.value = m.edition; store.set("lc-edition", m.edition); }
       botStatus(m.texte, m.connecte ? "st-ok" : "st-warn");
     } else if (m.type === "progres") { botStatus(`Construction : ${m.fait} / ${m.total} commandes…`, "st-warn"); $("botStop").disabled = false; }
-    else if (m.type === "fini") { botStatus(m.texte || "✅ Construction terminée !", "st-ok"); $("botStop").disabled = true; }
-    else if (m.type === "erreur") { botStatus("⚠️ " + m.texte, "st-err"); $("botStop").disabled = true; }
+    else if (m.type === "fini") { botStatus(m.texte || "Construction terminée.", "st-ok"); $("botStop").disabled = true; }
+    else if (m.type === "erreur") { botStatus(m.texte, "st-err"); $("botStop").disabled = true; }
     majCommandes();
   };
-  ws.onclose = () => { bot.ws = null; bot.pret = false; $("botConnect").textContent = "🔌 Connecter le robot"; $("botStop").disabled = true; botStatus("Robot non connecté. Le programme leftcontrol-bot est-il lancé ?", "hint"); majCommandes(); };
+  ws.onclose = () => { bot.ws = null; bot.pret = false; $("botConnect").textContent = "Connecter le robot"; $("botStop").disabled = true; botStatus("Robot non connecté. Le programme leftcontrol-bot est-il lancé ?", "hint"); majCommandes(); };
   ws.onerror = () => botStatus("Robot introuvable : lance d'abord le programme leftcontrol-bot.", "st-err");
 };
 $("botBuild").onclick = () => {
@@ -481,7 +803,10 @@ $("botBuild").onclick = () => {
 };
 $("botStop").onclick = () => bot.ws?.send(JSON.stringify({ type: "arreter" }));
 
-// ---------- Démarrage ----------
+// =====================================================================
+//  Démarrage
+// =====================================================================
+choisirMode(store.get("lc-mode", "recherche"));
 chargerPlan(store.get("lc-plan", B.PLANS.maison));
 $("mcMsg").textContent = "";
 </script>
