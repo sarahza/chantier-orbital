@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier d'agents</title>
+<meta name="description" content="Programme ton propre agent IA (propulsé par Claude) : ses instructions, ses outils, et garde le contrôle sur chacune de ses actions.">
+<style>
+:root {
+  --bg: #f4f2fb; --panel: #ffffff; --panel-2: #f0edf9; --line: #d9d3ee;
+  --text: #1d1933; --muted: #625c80; --accent: #6b4de6; --accent-text: #ffffff;
+  --ok: #1f8a4c; --warn: #b8660b; --err: #c0392b; --tool: #e9f3ff; --tool-line: #a9c8f0;
+  --user: #ece6ff; --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f0c1f; --panel: #1a1631; --panel-2: #231e40; --line: #352e5c;
+    --text: #ece8ff; --muted: #a49cc9; --accent: #8f74ff; --accent-text: #0f0c1f;
+    --ok: #4cd98a; --warn: #f2a54a; --err: #ff7b6b; --tool: #172640; --tool-line: #2f4f80;
+    --user: #2a2350;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f0c1f; --panel: #1a1631; --panel-2: #231e40; --line: #352e5c;
+  --text: #ece8ff; --muted: #a49cc9; --accent: #8f74ff; --accent-text: #0f0c1f;
+  --ok: #4cd98a; --warn: #f2a54a; --err: #ff7b6b; --tool: #172640; --tool-line: #2f4f80;
+  --user: #2a2350;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+header { padding: 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+header h1 { font-size: 20px; margin: 0; }
+header p { margin: 0; color: var(--muted); flex: 1 1 260px; }
+main { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 16px; padding: 16px; max-width: 1400px; margin: 0 auto; }
+@media (min-width: 861px) { #chat { position: sticky; top: 16px; align-self: start; } }
+@media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+section.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; }
+h2 { font-size: 16px; margin: 0 0 12px; }
+h3 { font-size: 14px; margin: 18px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+label { display: block; font-weight: 600; margin: 10px 0 4px; }
+label.inline { display: flex; align-items: center; gap: 8px; font-weight: 400; margin: 6px 0; }
+input[type=text], input[type=password], input[type=number], textarea, select {
+  width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--text); font: inherit;
+}
+textarea { resize: vertical; min-height: 80px; }
+textarea.code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; min-height: 110px; }
+small, .hint { color: var(--muted); font-size: 13px; }
+button {
+  font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--text); cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+button.danger { color: var(--err); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.row > * { flex: 0 0 auto; }
+.grow { flex: 1 1 auto !important; }
+.custom-tool { border: 1px dashed var(--line); border-radius: 10px; padding: 10px; margin: 10px 0; }
+#chat { display: flex; flex-direction: column; min-height: 70vh; }
+#log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; max-height: 70vh; }
+.msg { padding: 10px 12px; border-radius: 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.user { background: var(--user); align-self: flex-end; max-width: 85%; }
+.msg.agent { background: var(--panel-2); max-width: 95%; }
+.msg.agent .who, .msg.user .who { font-size: 12px; color: var(--muted); display: block; margin-bottom: 2px; }
+.msg.info { color: var(--muted); font-size: 13px; text-align: center; background: none; padding: 2px; }
+.msg.error { border: 1px solid var(--err); color: var(--err); }
+.tool { background: var(--tool); border: 1px solid var(--tool-line); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.tool pre { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12.5px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+.tool .status { font-weight: 600; }
+.tool .status.ok { color: var(--ok); } .tool .status.err { color: var(--err); } .tool .status.wait { color: var(--warn); }
+#composer { display: flex; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+#composer textarea { min-height: 48px; }
+.thinking { color: var(--muted); font-style: italic; }
+details summary { cursor: pointer; font-weight: 600; margin: 10px 0 4px; }
+.keybox { background: var(--panel-2); border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🤖 Atelier d'agents</h1>
+  <p>Programme ton propre agent IA : donne-lui une mission, choisis ses outils, invente-en de nouveaux… et garde le contrôle sur tout ce qu'il fait.</p>
+</header>
+
+<main>
+  <!-- ============ PROGRAMMATION ============ -->
+  <section class="panel" id="config">
+    <h2>⚙️ Programmer l'agent</h2>
+
+    <div class="keybox">
+      <label for="apiKey" style="margin-top:0">Clé API Claude</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off">
+      <small>Crée une clé sur <a href="https://platform.claude.com/" target="_blank" rel="noopener">platform.claude.com</a> (c'est payant, à l'usage). La clé reste dans ce navigateur et n'est envoyée qu'à Anthropic. N'utilise cette page que sur ton propre ordinateur.</small>
+      <label class="inline"><input type="checkbox" id="rememberKey"> Se souvenir de la clé sur cet ordinateur</label>
+    </div>
+
+    <label for="preset">Partir d'un modèle</label>
+    <div class="row">
+      <select id="preset" class="grow">
+        <option value="">— Choisir —</option>
+        <option value="assistant">Assistant polyvalent</option>
+        <option value="savant">Petit savant de l'espace</option>
+        <option value="conteur">Conteur d'histoires</option>
+        <option value="robot">Robot gestionnaire de tâches</option>
+      </select>
+      <button id="applyPreset">Charger</button>
+    </div>
+
+    <label for="agentName">Nom de l'agent</label>
+    <input type="text" id="agentName">
+
+    <label for="system">Instructions (sa mission, sa personnalité, ses règles)</label>
+    <textarea id="system" rows="6"></textarea>
+
+    <div class="row">
+      <div class="grow">
+        <label for="model">Cerveau (modèle)</label>
+        <select id="model">
+          <option value="claude-opus-5-5">Claude Opus 5.5 (le plus fort)</option>
+          <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (rapide)</option>
+          <option value="claude-haiku-5-5">Claude Haiku 5.5 (très rapide, pas cher)</option>
+        </select>
+      </div>
+      <div class="grow">
+        <label for="effort">Effort de réflexion</label>
+        <select id="effort">
+          <option value="low">Faible</option>
+          <option value="medium">Moyen</option>
+          <option value="high">Élevé</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>Outils intégrés</h3>
+    <label class="inline"><input type="checkbox" data-builtin="calculatrice"> 🧮 Calculatrice</label>
+    <label class="inline"><input type="checkbox" data-builtin="horloge"> 🕒 Date et heure</label>
+    <label class="inline"><input type="checkbox" data-builtin="memoire"> 📒 Mémoire (retient des choses entre les conversations)</label>
+    <label class="inline"><input type="checkbox" data-builtin="web"> 🌐 Recherche sur internet</label>
+
+    <h3>Mes outils programmés</h3>
+    <small>Un outil, c'est une action que l'agent peut décider d'utiliser. Écris le code JavaScript qui s'exécute : il reçoit <code>input</code> (les paramètres choisis par l'agent) et doit <code>return</code> un résultat.</small>
+    <div id="customTools"></div>
+    <button id="addTool">+ Ajouter un outil</button>
+
+    <h3>Contrôle</h3>
+    <label class="inline"><input type="checkbox" id="approve"> ✋ Me demander l'accord avant chaque action</label>
+    <label for="maxSteps">Nombre maximum d'étapes par message</label>
+    <input type="number" id="maxSteps" min="1" max="50">
+
+    <h3>Sauvegarde</h3>
+    <div class="row">
+      <button id="exportBtn">💾 Exporter l'agent</button>
+      <button id="importBtn">📂 Importer</button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+      <button id="resetMemory" class="danger">Effacer la mémoire</button>
+    </div>
+    <small>La configuration est enregistrée automatiquement dans ce navigateur.</small>
+  </section>
+
+  <!-- ============ CONVERSATION ============ -->
+  <section class="panel" id="chat">
+    <div class="row" style="justify-content: space-between; margin-bottom: 8px;">
+      <h2 id="chatTitle" style="margin:0">💬 Parler à l'agent</h2>
+      <button id="clearChat">Nouvelle conversation</button>
+    </div>
+    <div id="log" aria-live="polite"></div>
+    <div id="composer">
+      <textarea id="input" placeholder="Écris ta demande… (Entrée pour envoyer, Maj+Entrée pour aller à la ligne)"></textarea>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <button id="send" class="primary">Envoyer</button>
+        <button id="stop" class="danger" disabled>⏹ Arrêter</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+import Anthropic from "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@1.4.0/+esm";
+
+// ---------- Stockage (toujours protégé : peut échouer en navigation privée) ----------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+
+// ---------- Modèles d'agents ----------
+const PRESETS = {
+  assistant: {
+    name: "Max",
+    system: "Tu es Max, un assistant gentil et efficace. Tu réponds en français, avec des phrases claires. Quand une question demande un calcul, utilise la calculatrice. Quand on te dit quelque chose à retenir, enregistre-le dans ta mémoire.",
+    builtins: ["calculatrice", "horloge", "memoire"], customTools: [], effort: "medium",
+  },
+  savant: {
+    name: "EinsteinBalis",
+    system: "Tu es EinsteinBalis, un petit savant passionné par l'espace. Tu expliques la science (planètes, étoiles, galaxies, trous noirs, gravité, ADN) à des enfants de 8 à 12 ans, avec des comparaisons simples et un peu d'humour. Si tu n'es pas sûr d'une information, cherche sur internet ou dis que tu ne sais pas.",
+    builtins: ["calculatrice", "web"],
+    customTools: [{
+      name: "poids_sur_planete",
+      description: "Calcule combien pèserait quelque chose sur une autre planète du Système solaire.",
+      params: "poids_terre_kg, planete",
+      code: "const g = { mercure: 0.38, venus: 0.91, terre: 1, lune: 0.17, mars: 0.38, jupiter: 2.53, saturne: 1.07, uranus: 0.89, neptune: 1.14 };\nconst p = input.planete.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\nif (!(p in g)) return 'Planète inconnue. Choix : ' + Object.keys(g).join(', ');\nreturn (Number(input.poids_terre_kg) * g[p]).toFixed(1) + ' kg sur ' + input.planete;",
+    }],
+    effort: "medium",
+  },
+  conteur: {
+    name: "Plume",
+    system: "Tu es Plume, un conteur d'histoires. Tu inventes des histoires courtes (10 à 20 lignes) pour enfants, drôles et pleines d'aventure. À la fin, propose toujours deux choix pour la suite. Utilise le dé pour décider des rebondissements surprises.",
+    builtins: ["memoire"],
+    customTools: [{
+      name: "lancer_de",
+      description: "Lance un dé et renvoie un nombre au hasard entre 1 et le nombre de faces.",
+      params: "faces",
+      code: "const f = Math.max(2, parseInt(input.faces) || 6);\nreturn 'Le dé tombe sur ' + (1 + Math.floor(Math.random() * f));",
+    }],
+    effort: "low",
+  },
+  robot: {
+    name: "Robo-Liste",
+    system: "Tu es Robo-Liste, un robot qui gère une liste de tâches. Utilise toujours tes outils pour ajouter, lister ou terminer des tâches, puis résume ce que tu as fait en une phrase.",
+    builtins: [],
+    customTools: [
+      { name: "ajouter_tache", description: "Ajoute une tâche à la liste.", params: "tache",
+        code: "const l = JSON.parse(localStorage.getItem('robo-taches') || '[]');\nl.push(input.tache);\nlocalStorage.setItem('robo-taches', JSON.stringify(l));\nreturn 'Ajoutée. Il y a ' + l.length + ' tâche(s).';" },
+      { name: "lister_taches", description: "Renvoie toutes les tâches de la liste, numérotées.", params: "",
+        code: "const l = JSON.parse(localStorage.getItem('robo-taches') || '[]');\nreturn l.length ? l.map((t, i) => (i + 1) + '. ' + t).join('\\n') : 'La liste est vide.';" },
+      { name: "terminer_tache", description: "Retire une tâche terminée, à partir de son numéro (commence à 1).", params: "numero",
+        code: "const l = JSON.parse(localStorage.getItem('robo-taches') || '[]');\nconst i = parseInt(input.numero) - 1;\nif (i < 0 || i >= l.length) throw new Error('Numéro invalide');\nconst [t] = l.splice(i, 1);\nlocalStorage.setItem('robo-taches', JSON.stringify(l));\nreturn 'Terminée : ' + t;" },
+    ],
+    effort: "low",
+  },
+};
+
+const DEFAULT_CONFIG = { ...structuredClone(PRESETS.assistant), model: "claude-opus-5-5", approve: false, maxSteps: 10 };
+
+// ---------- Éléments ----------
+const $ = (id) => document.getElementById(id);
+const els = {
+  apiKey: $("apiKey"), rememberKey: $("rememberKey"), name: $("agentName"), system: $("system"),
+  model: $("model"), effort: $("effort"), approve: $("approve"), maxSteps: $("maxSteps"),
+  customTools: $("customTools"), log: $("log"), input: $("input"), send: $("send"), stop: $("stop"),
+};
+
+// ---------- Configuration <-> formulaire ----------
+function readConfig() {
+  return {
+    name: els.name.value.trim() || "Agent",
+    system: els.system.value,
+    model: els.model.value,
+    effort: els.effort.value,
+    builtins: [...document.querySelectorAll("[data-builtin]")].filter((c) => c.checked).map((c) => c.dataset.builtin),
+    customTools: [...els.customTools.querySelectorAll(".custom-tool")].map((box) => ({
+      name: box.querySelector(".t-name").value.trim(),
+      description: box.querySelector(".t-desc").value.trim(),
+      params: box.querySelector(".t-params").value.trim(),
+      code: box.querySelector(".t-code").value,
+    })),
+    approve: els.approve.checked,
+    maxSteps: Math.min(50, Math.max(1, parseInt(els.maxSteps.value) || 10)),
+  };
+}
+
+function writeConfig(c) {
+  c = { ...DEFAULT_CONFIG, ...c };
+  els.name.value = c.name; els.system.value = c.system; els.model.value = c.model;
+  els.effort.value = c.effort; els.approve.checked = !!c.approve; els.maxSteps.value = c.maxSteps;
+  document.querySelectorAll("[data-builtin]").forEach((cb) => { cb.checked = c.builtins.includes(cb.dataset.builtin); });
+  els.customTools.innerHTML = "";
+  (c.customTools || []).forEach(addCustomToolBox);
+  updateTitle();
+}
+
+function addCustomToolBox(t = { name: "", description: "", params: "", code: "return 'Bonjour ' + input.nom;" }) {
+  const box = document.createElement("div");
+  box.className = "custom-tool";
+  box.innerHTML = `
+    <label>Nom de l'outil <small>(lettres, chiffres et _ seulement)</small></label>
+    <input type="text" class="t-name" placeholder="mon_outil">
+    <label>Ce que fait l'outil <small>(l'agent lit cette phrase pour décider quand s'en servir)</small></label>
+    <input type="text" class="t-desc">
+    <label>Paramètres <small>(noms séparés par des virgules)</small></label>
+    <input type="text" class="t-params" placeholder="nom, age">
+    <label>Code JavaScript</label>
+    <textarea class="t-code code" spellcheck="false"></textarea>
+    <div class="row" style="margin-top:6px"><button class="danger t-del">Supprimer cet outil</button></div>`;
+  box.querySelector(".t-name").value = t.name;
+  box.querySelector(".t-desc").value = t.description;
+  box.querySelector(".t-params").value = t.params;
+  box.querySelector(".t-code").value = t.code;
+  box.querySelector(".t-del").onclick = () => { box.remove(); saveConfig(); };
+  els.customTools.appendChild(box);
+}
+
+function saveConfig() { store.set("agent-config", readConfig()); updateTitle(); }
+function updateTitle() { $("chatTitle").textContent = "💬 Parler à " + (els.name.value.trim() || "l'agent"); }
+
+// ---------- Outils intégrés ----------
+function calculer(expr) {
+  // Petit analyseur sûr : nombres, + - * / % ^, parenthèses, sqrt, sin, cos, tan, abs, round, pi, e
+  const src = String(expr).replace(/,/g, ".").replace(/×/g, "*").replace(/÷/g, "/");
+  let i = 0;
+  const peek = () => src[i], skip = () => { while (/\s/.test(src[i] ?? "")) i++; };
+  const fns = { sqrt: Math.sqrt, racine: Math.sqrt, sin: Math.sin, cos: Math.cos, tan: Math.tan, abs: Math.abs, round: Math.round, log: Math.log10, ln: Math.log };
+  function primary() {
+    skip();
+    if (peek() === "(") { i++; const v = sum(); skip(); if (src[i++] !== ")") throw new Error("parenthèse manquante"); return v; }
+    if (peek() === "-") { i++; return -factor(); }
+    if (peek() === "+") { i++; return factor(); }
+    const num = /^\d+(\.\d+)?([eE][+-]?\d+)?/.exec(src.slice(i));
+    if (num) { i += num[0].length; return parseFloat(num[0]); }
+    const id = /^[a-zA-Z]+/.exec(src.slice(i));
+    if (id) {
+      i += id[0].length; const n = id[0].toLowerCase();
+      if (n === "pi") return Math.PI; if (n === "e") return Math.E;
+      if (fns[n]) { skip(); if (src[i++] !== "(") throw new Error("( attendue après " + n); const v = sum(); skip(); if (src[i++] !== ")") throw new Error("parenthèse manquante"); return fns[n](v); }
+      throw new Error("inconnu : " + n);
+    }
+    throw new Error("expression invalide près de « " + src.slice(i, i + 5) + " »");
+  }
+  function factor() { const b = primary(); skip(); if (peek() === "^") { i++; return b ** factor(); } return b; }
+  function product() { let v = factor(); for (;;) { skip(); const o = peek(); if (o === "*") { i++; v *= factor(); } else if (o === "/") { i++; v /= factor(); } else if (o === "%") { i++; v %= factor(); } else return v; } }
+  function sum() { let v = product(); for (;;) { skip(); const o = peek(); if (o === "+") { i++; v += product(); } else if (o === "-") { i++; v -= product(); } else return v; } }
+  const v = sum(); skip();
+  if (i < src.length) throw new Error("caractère inattendu : " + src[i]);
+  return String(Math.round(v * 1e12) / 1e12);
+}
+
+const BUILTINS = {
+  calculatrice: {
+    def: { name: "calculatrice", description: "Calcule une expression mathématique exacte. Exemples : '12*(3+4)', '2^10', 'sqrt(144)', 'pi*3^2'.",
+      input_schema: { type: "object", properties: { expression: { type: "string", description: "L'expression à calculer" } }, required: ["expression"] } },
+    run: (input) => calculer(input.expression),
+  },
+  horloge: {
+    def: { name: "date_et_heure", description: "Donne la date et l'heure actuelles de l'utilisateur.",
+      input_schema: { type: "object", properties: {} } },
+    run: () => new Date().toLocaleString("fr-FR", { dateStyle: "full", timeStyle: "short" }),
+  },
+  memoire: {
+    def: { name: "memoire", description: "Mémoire permanente de l'agent. action='ecrire' enregistre une valeur sous une clé ; action='lire' renvoie une clé (ou tout si la clé est vide) ; action='effacer' supprime une clé.",
+      input_schema: { type: "object", properties: {
+        action: { type: "string", enum: ["lire", "ecrire", "effacer"] },
+        cle: { type: "string" }, valeur: { type: "string" } }, required: ["action"] } },
+    run: (input) => {
+      const m = store.get("agent-memory", {});
+      if (input.action === "ecrire") { if (!input.cle) throw new Error("clé manquante"); m[input.cle] = input.valeur ?? ""; store.set("agent-memory", m); return "Enregistré."; }
+      if (input.action === "effacer") { delete m[input.cle]; store.set("agent-memory", m); return "Effacé."; }
+      if (input.cle) return input.cle in m ? m[input.cle] : "(rien sous cette clé)";
+      return Object.keys(m).length ? JSON.stringify(m, null, 2) : "(mémoire vide)";
+    },
+  },
+  web: { server: { type: "web_search_20260209", name: "web_search", max_uses: 5 } },
+};
+
+// ---------- Construction des outils pour l'API ----------
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+
+function buildTools(cfg) {
+  const tools = [], runners = {};
+  for (const b of cfg.builtins) {
+    const t = BUILTINS[b];
+    if (t.server) { tools.push(t.server); continue; }
+    tools.push(t.def); runners[t.def.name] = t.run;
+  }
+  for (const ct of cfg.customTools) {
+    if (!/^[a-zA-Z0-9_-]{1,64}$/.test(ct.name)) throw new Error(`Nom d'outil invalide : « ${ct.name} » (lettres, chiffres, _ et - seulement).`);
+    if (runners[ct.name]) throw new Error(`Deux outils s'appellent « ${ct.name} ».`);
+    const params = ct.params.split(",").map((p) => p.trim()).filter(Boolean);
+    const properties = Object.fromEntries(params.map((p) => [p, { type: "string" }]));
+    let fn;
+    try { fn = new AsyncFunction("input", ct.code); }
+    catch (e) { throw new Error(`Erreur dans le code de « ${ct.name} » : ${e.message}`); }
+    tools.push({ name: ct.name, description: ct.description || ct.name, input_schema: { type: "object", properties, required: params } });
+    runners[ct.name] = fn;
+  }
+  return { tools, runners };
+}
+
+// ---------- Affichage ----------
+function addMsg(kind, text, who) {
+  const d = document.createElement("div");
+  d.className = "msg " + kind;
+  if (who) { const w = document.createElement("span"); w.className = "who"; w.textContent = who; d.appendChild(w); }
+  d.appendChild(document.createTextNode(text));
+  els.log.appendChild(d); els.log.scrollTop = els.log.scrollHeight;
+  return d;
+}
+
+function addToolCard(name, input) {
+  const d = document.createElement("div");
+  d.className = "tool";
+  d.innerHTML = `<div>🔧 <b class="tname"></b> <span class="status wait">…</span></div><pre class="tin"></pre><pre class="tout"></pre><div class="row tbtns"></div>`;
+  d.querySelector(".tname").textContent = name;
+  d.querySelector(".tin").textContent = "Entrée : " + JSON.stringify(input, null, 2);
+  els.log.appendChild(d); els.log.scrollTop = els.log.scrollHeight;
+  return {
+    el: d,
+    status(text, cls) { const s = d.querySelector(".status"); s.textContent = text; s.className = "status " + cls; },
+    output(text) { d.querySelector(".tout").textContent = "Résultat : " + text; els.log.scrollTop = els.log.scrollHeight; },
+    ask() {
+      return new Promise((resolve) => {
+        const box = d.querySelector(".tbtns");
+        const yes = document.createElement("button"); yes.className = "primary"; yes.textContent = "✅ Autoriser";
+        const no = document.createElement("button"); no.className = "danger"; no.textContent = "❌ Refuser";
+        const done = (v) => { box.innerHTML = ""; currentAsk = null; resolve(v); };
+        yes.onclick = () => done(true); no.onclick = () => done(false);
+        currentAsk = () => done(false);
+        box.append(yes, no);
+      });
+    },
+  };
+}
+
+// ---------- Boucle de l'agent ----------
+let messages = [];
+let running = false, stopRequested = false, abortCtl = null, currentAsk = null;
+
+function getClient() {
+  const apiKey = els.apiKey.value.trim();
+  if (!apiKey) throw new Error("Ajoute d'abord ta clé API Claude (en haut à gauche).");
+  return new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+}
+
+function friendlyError(e) {
+  if (e instanceof Anthropic.AuthenticationError) return "Clé API refusée : vérifie-la.";
+  if (e instanceof Anthropic.PermissionDeniedError) return "Cette clé n'a pas accès à ce modèle ou à cet outil.";
+  if (e instanceof Anthropic.RateLimitError) return "Trop de demandes d'un coup. Attends un peu et réessaie.";
+  if (e instanceof Anthropic.BadRequestError) return "Demande refusée par l'API : " + e.message;
+  if (e instanceof Anthropic.APIConnectionError) return "Impossible de joindre l'API (connexion internet ?).";
+  if (e instanceof Anthropic.APIError) return `Erreur de l'API (${e.status ?? "?"}) : ${e.message}`;
+  return e?.message || String(e);
+}
+
+async function runAgent(userText) {
+  const cfg = readConfig();
+  let client, built;
+  try { client = getClient(); built = buildTools(cfg); }
+  catch (e) { addMsg("error", e.message); return; }
+
+  const turnStart = messages.length;
+  messages.push({ role: "user", content: userText });
+  setRunning(true);
+
+  try {
+    for (let step = 1; ; step++) {
+      if (stopRequested) { addMsg("info", "⏹ Arrêté."); break; }
+      if (step > cfg.maxSteps) { addMsg("info", `L'agent a atteint la limite de ${cfg.maxSteps} étapes. Écris « continue » pour qu'il poursuive.`); break; }
+
+      const thinking = addMsg("agent thinking", `${cfg.name} réfléchit…`);
+      const params = {
+        model: cfg.model,
+        max_tokens: 16000,
+        system: cfg.system,
+        messages,
+        output_config: { effort: cfg.effort },
+      };
+      if (built.tools.length) params.tools = built.tools;
+      // Si le modèle refuse une demande, l'API essaie automatiquement un autre modèle (pas disponible pour Haiku).
+      if (cfg.model !== "claude-haiku-5-5") { params.betas = ["server-side-fallback-2026-07-01"]; params.fallbacks = "default"; }
+
+      abortCtl = new AbortController();
+      let resp;
+      try { resp = await client.beta.messages.create(params, { signal: abortCtl.signal }); }
+      finally { thinking.remove(); }
+
+      // On garde tout le contenu (y compris les blocs de réflexion) pour la suite de la conversation.
+      messages.push({ role: "assistant", content: resp.content });
+
+      for (const b of resp.content) {
+        if (b.type === "text" && b.text.trim()) addMsg("agent", b.text, cfg.name);
+        else if (b.type === "server_tool_use" && b.name === "web_search") addMsg("info", `🌐 Recherche : « ${b.input?.query ?? ""} »`);
+        else if (b.type === "fallback") addMsg("info", `(${b.from?.model} a passé la main à ${b.to?.model})`);
+      }
+
+      if (resp.stop_reason === "refusal") { addMsg("error", "L'agent a refusé cette demande."); messages.length = turnStart; break; }
+      if (resp.stop_reason === "pause_turn") continue;
+      if (resp.stop_reason === "max_tokens") { addMsg("info", "Réponse coupée (trop longue)."); break; }
+      if (resp.stop_reason !== "tool_use") break;
+
+      // Exécuter les outils demandés, un par un.
+      const results = [];
+      for (const call of resp.content.filter((b) => b.type === "tool_use")) {
+        const card = addToolCard(call.name, call.input);
+        const result = { type: "tool_result", tool_use_id: call.id };
+        if (stopRequested) {
+          card.status("annulé", "err"); Object.assign(result, { content: "Arrêté par l'utilisateur.", is_error: true });
+        } else if (cfg.approve && !(await (card.status("en attente de ton accord", "wait"), card.ask()))) {
+          card.status("refusé", "err"); Object.assign(result, { content: "L'utilisateur a refusé cette action.", is_error: true });
+        } else {
+          card.status("en cours…", "wait");
+          try {
+            const run = built.runners[call.name];
+            if (!run) throw new Error("outil inconnu");
+            let out = await run(call.input ?? {});
+            out = typeof out === "string" ? out : JSON.stringify(out ?? "(aucun résultat)");
+            card.status("terminé", "ok"); card.output(out); result.content = out || "(vide)";
+          } catch (e) {
+            card.status("erreur", "err"); card.output(e.message); Object.assign(result, { content: "Erreur : " + e.message, is_error: true });
+          }
+        }
+        results.push(result);
+      }
+      messages.push({ role: "user", content: results });
+    }
+  } catch (e) {
+    if (e instanceof Anthropic.APIUserAbortError || stopRequested) addMsg("info", "⏹ Arrêté.");
+    else {
+      addMsg("error", friendlyError(e));
+      messages.length = turnStart; // on oublie ce tour raté pour pouvoir réessayer proprement
+    }
+  } finally {
+    setRunning(false);
+  }
+}
+
+function setRunning(on) {
+  running = on; stopRequested = false;
+  els.send.disabled = on; els.stop.disabled = !on;
+}
+
+// ---------- Événements ----------
+function send() {
+  const text = els.input.value.trim();
+  if (!text || running) return;
+  els.input.value = "";
+  addMsg("user", text, "Toi");
+  runAgent(text);
+}
+els.send.onclick = send;
+els.input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+els.stop.onclick = () => { stopRequested = true; abortCtl?.abort(); currentAsk?.(); };
+$("clearChat").onclick = () => { if (running) return; messages = []; els.log.innerHTML = ""; addMsg("info", "Nouvelle conversation."); };
+$("addTool").onclick = () => { addCustomToolBox(); saveConfig(); };
+$("applyPreset").onclick = () => {
+  const p = PRESETS[$("preset").value]; if (!p) return;
+  writeConfig({ ...readConfig(), ...structuredClone(p) }); saveConfig();
+  addMsg("info", `Modèle « ${p.name} » chargé.`);
+};
+$("config").addEventListener("input", (e) => { if (e.target !== els.apiKey && e.target !== $("preset")) saveConfig(); });
+$("config").addEventListener("change", (e) => { if (e.target !== els.apiKey && e.target !== $("preset")) saveConfig(); });
+
+els.rememberKey.onchange = () => { if (els.rememberKey.checked) store.set("agent-key", els.apiKey.value.trim()); else store.del("agent-key"); };
+els.apiKey.oninput = () => { if (els.rememberKey.checked) store.set("agent-key", els.apiKey.value.trim()); };
+
+$("exportBtn").onclick = () => {
+  const cfg = readConfig();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(cfg, null, 2)], { type: "application/json" }));
+  a.download = (cfg.name || "agent").replace(/[^\w-]+/g, "_") + ".agent.json";
+  a.click(); URL.revokeObjectURL(a.href);
+};
+$("importBtn").onclick = () => $("importFile").click();
+$("importFile").onchange = async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  try { writeConfig(JSON.parse(await f.text())); saveConfig(); addMsg("info", "Agent importé."); }
+  catch { addMsg("error", "Ce fichier n'est pas un agent valide."); }
+  e.target.value = "";
+};
+$("resetMemory").onclick = () => { if (confirm("Effacer tout ce que l'agent a mémorisé ?")) { store.del("agent-memory"); addMsg("info", "Mémoire effacée."); } };
+
+// ---------- Démarrage ----------
+writeConfig(store.get("agent-config", DEFAULT_CONFIG));
+const savedKey = store.get("agent-key", "");
+if (savedKey) { els.apiKey.value = savedKey; els.rememberKey.checked = true; }
+addMsg("info", "Programme ton agent à gauche, puis écris-lui ici.");
+</script>
+</body>
+</html>
