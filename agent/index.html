@@ -411,7 +411,8 @@ function image(ms) {
 }
 let derniere = 0;
 function boucle(ms) {
-  if (ms - derniere > 32) { image(ms); derniere = ms; } // ~30 images par seconde
+  // ~30 images par seconde ; pause pendant que l'IA travaille pour lui laisser la carte graphique
+  if (ms - derniere > 32 && !busy && !loading) { image(ms); derniere = ms; }
   requestAnimationFrame(boucle);
 }
 initCosmos();
@@ -494,16 +495,40 @@ async function reveiller() {
 }
 $("wake").onclick = () => reveiller().catch(() => {});
 
+// La carte graphique peut « décrocher » (souvent par manque de mémoire) : la bibliothèque
+// efface alors le cerveau. On le détecte, on recharge une fois, puis on conseille plus léger.
+const cerveauPerdu = (e) => e?.name === "ModelNotLoadedError" || /model not loaded|device (was )?lost/i.test(e?.message || "");
+function endormir() {
+  try { engine?.unload(); } catch {}
+  engine = null; engineModel = null;
+  $("bar").style.width = "0"; $("wake").textContent = "Réveiller LeftControl";
+}
+
 async function generer(mission, historique, onTexte, options = {}) {
-  await reveiller();
-  const chunks = await engine.chat.completions.create({
-    messages: [{ role: "system", content: systeme(mission) }, ...historique],
-    stream: true, temperature: options.temperature ?? 0.6, max_tokens: options.max_tokens ?? 2048,
-    ...(options.response_format ? { response_format: options.response_format } : {}),
-  });
-  let texte = "";
-  for await (const c of chunks) { texte += c.choices[0]?.delta?.content || ""; onTexte(texte); }
-  return texte;
+  for (let essai = 0; ; essai++) {
+    await reveiller();
+    try {
+      const chunks = await engine.chat.completions.create({
+        messages: [{ role: "system", content: systeme(mission) }, ...historique],
+        stream: true, temperature: options.temperature ?? 0.6, max_tokens: options.max_tokens ?? 2048,
+        ...(options.response_format ? { response_format: options.response_format } : {}),
+      });
+      let texte = "";
+      for await (const c of chunks) { texte += c.choices[0]?.delta?.content || ""; onTexte(texte); }
+      return texte;
+    } catch (e) {
+      if (!cerveauPerdu(e) || stopDemande) throw e;
+      endormir();
+      if (essai >= 1) {
+        const i = modelSel.selectedIndex;
+        if (i > 0) { modelSel.selectedIndex = i - 1; store.set("lc-model", modelSel.value); }
+        const conseil = i > 0 ? `J'ai sélectionné le cerveau « ${modelSel.options[modelSel.selectedIndex].text.split(" —")[0]} » : clique sur Réveiller pour l'essayer.` : "Ferme les autres onglets et programmes, puis réessaie.";
+        setStatus("La carte graphique de cet ordinateur n'a pas assez de mémoire pour ce cerveau. " + conseil, "st-err");
+        throw new Error("la carte graphique a manqué de mémoire. " + conseil);
+      }
+      setStatus("La carte graphique a décroché. Je recharge LeftControl…", "st-warn");
+    }
+  }
 }
 
 function setBusy(on) {
