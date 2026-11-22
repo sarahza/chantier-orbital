@@ -1,0 +1,16 @@
+{
+  "name": "leftcontrol-bot",
+  "version": "1.0.0",
+  "description": "Fait entrer LeftControl dans Minecraft pour construire les plans de la page LeftControl.",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "bedrock": "node leftcontrol.js bedrock",
+    "java": "node leftcontrol.js java"
+  },
+  "dependencies": {
+    "mineflayer": "4.39.0",
+    "ws": "8.22.1"
+  }
+}
