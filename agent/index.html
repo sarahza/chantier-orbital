@@ -91,6 +91,7 @@ details summary { cursor: pointer; font-weight: 600; margin: 12px 0 6px; font-si
 .sources { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 .sources ol { margin: 4px 0 0; padding-left: 20px; }
 .status-line { font-size: 13px; color: var(--muted); font-style: italic; }
+.check { font-size: 13px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
 .codeblock { background: rgba(0, 0, 0, .45); border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; }
 .codeblock pre { margin: 0; padding: 11px; overflow-x: auto; font: 12.5px/1.5 ui-monospace, Menlo, Consolas, monospace; max-height: 340px; color: #cfeee4; }
 .codeblock .row { padding: 7px 9px; border-top: 1px solid var(--line); }
@@ -152,8 +153,8 @@ footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 0 
   <!-- ============ MODES ============ -->
   <section class="panel">
     <div class="modes" role="tablist" aria-label="Modes">
-      <button role="tab" data-mode="recherche" aria-selected="true"><b>Recherche</b><span>Il cherche et t'explique, avec ses sources</span></button>
-      <button role="tab" data-mode="code" aria-selected="false"><b>Code</b><span>Programmes, jeux et constructions Minecraft</span></button>
+      <button role="tab" data-mode="recherche" aria-selected="true"><b>Recherche</b><span>Plusieurs recherches, réponse avec sources</span></button>
+      <button role="tab" data-mode="code" aria-selected="false"><b>Code</b><span>Il teste et corrige son code tout seul</span></button>
       <button role="tab" data-mode="business" aria-selected="false"><b>Business</b><span>Projets, emails, prix, idées</span></button>
     </div>
 
@@ -280,6 +281,7 @@ footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 0 
 
 <script type="module">
 import * as B from "./batisseur.js";
+import * as O from "./outils.js";
 
 const WEBLLM_URL = "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.87/+esm";
 const ACCENT = [3, 187, 133];
@@ -433,10 +435,10 @@ const store = {
 const PERSONA_DEFAUT = "Tu t'appelles LeftControl. Tu es un agent IA précis, calme et serviable, qui vit dans l'ordinateur de l'utilisateur. Tu parles français, avec des phrases claires. Tu n'utilises jamais d'émojis. Si tu ne sais pas quelque chose, tu le dis.";
 
 const MISSIONS = {
-  recherche: "Mode Recherche : tu expliques des sujets de façon claire et structurée (titres courts, listes). Quand des sources te sont fournies, appuie-toi d'abord sur elles et cite-les avec leur numéro, par exemple [1]. N'invente jamais de source.",
-  motscles: 'Donne uniquement 2 à 5 mots-clés pour chercher la réponse dans Wikipédia, en JSON : {"recherche": "..."}.',
-  code: "Mode Code : quand on te demande un programme, réponds par une phrase d'explication, puis UN SEUL bloc de code complet. Pour un jeu ou une page, écris un fichier HTML complet (avec CSS et JavaScript dedans) dans un bloc ```html, qui marche tout seul sans rien installer. Quand on te demande une modification, renvoie le fichier complet modifié.",
-  business: "Mode Business : tu es un conseiller en entreprise pratique. Tu aides à monter des projets, écrire des emails professionnels, fixer des prix, trouver des noms et des clients. Réponds de façon structurée (titres courts, listes, tableaux simples si utile). Pour les calculs, montre le détail. Reste réaliste et honnête sur les risques.",
+  recherche: "Mode Recherche : tu expliques des sujets de façon claire et structurée (titres courts, listes). Quand des sources te sont fournies, appuie-toi d'abord sur elles et cite-les avec leur numéro, par exemple [1]. N'invente jamais de source. Pour tout calcul, écris l'opération sous la forme {{= 120*4 - 300 }} : la page la remplace par le résultat exact. N'écris jamais toi-même le résultat d'un calcul.",
+  motscles: 'Pour trouver la réponse dans Wikipédia, propose 2 ou 3 recherches différentes (2 à 5 mots chacune : le sujet principal, puis des angles complémentaires). Réponds en JSON : {"recherches": ["...", "..."]}.',
+  code: "Mode Code : quand on te demande un programme, réponds par une phrase d'explication, puis UN SEUL bloc de code complet. Pour un jeu ou une page, écris un fichier HTML complet (avec CSS et JavaScript dedans) dans un bloc ```html, qui marche tout seul sans rien installer. Quand on te demande une modification, renvoie le fichier complet modifié. Garde le programme court et simple (moins de 150 lignes). Ton programme sera testé automatiquement : s'il y a une erreur, on te la montrera pour que tu la corriges.",
+  business: "Mode Business : tu es un conseiller en entreprise pratique. Tu aides à monter des projets, écrire des emails professionnels, fixer des prix, trouver des noms et des clients. Réponds de façon structurée (titres courts, listes, tableaux simples si utile). Montre le détail des calculs. Pour tout calcul, écris l'opération sous la forme {{= 120*4 - 300 }} : la page la remplace par le résultat exact. N'écris jamais toi-même le résultat d'un calcul. Reste réaliste et honnête sur les risques.",
   mc: `Mode Code, construction Minecraft. Réponds UNIQUEMENT avec un objet JSON : {"nom": "...", "pieces": [...]}.
 Chaque pièce : {"forme", "bloc", "x", "y", "z", "largeur", "hauteur", "profondeur", "creux"}.
 - x, y, z : coin de départ (y = hauteur, 0 = niveau du sol). largeur va vers x, hauteur vers y, profondeur vers z.
@@ -610,7 +612,7 @@ function rendre(body, texte, final) {
   body.innerHTML = "";
   const re = /```([\w+-]*)\n?([\s\S]*?)(```|$)/g;
   let last = 0, m;
-  const ajouterTexte = (t) => { if (t.trim()) { const d = document.createElement("div"); d.innerHTML = markdown(t.trim()); body.appendChild(d); } };
+  const ajouterTexte = (t) => { if (t.trim()) { const d = document.createElement("div"); d.innerHTML = markdown(O.remplacerCalculs(t.trim())); body.appendChild(d); } };
   while ((m = re.exec(texte))) {
     ajouterTexte(texte.slice(last, m.index));
     body.appendChild(blocCode(m[1] || "texte", m[2], final && m[3] === "```"));
@@ -640,7 +642,7 @@ function blocCode(lang, code, complet) {
     mk("Lancer", () => {
       let f = box.querySelector("iframe");
       if (!f) { f = document.createElement("iframe"); f.className = "run"; f.setAttribute("sandbox", "allow-scripts"); f.title = "Résultat du programme"; box.appendChild(f); }
-      f.srcdoc = lg === "html" ? code : `<!doctype html><meta charset="utf-8"><body><script>${code.replace(/<\/script/gi, "<\\/script")}<\/script></body>`;
+      f.srcdoc = O.pageDuProgramme(code, lg === "html" ? "html" : "js");
     });
   }
   mk("Copier", (e) => copier(e.target, code, "Copier"));
@@ -653,32 +655,44 @@ function blocCode(lang, code, complet) {
 // =====================================================================
 //  Recherche dans Wikipédia (sans clé)
 // =====================================================================
-async function wiki(params) {
-  const u = new URL("https://fr.wikipedia.org/w/api.php");
+async function wiki(langue, params) {
+  const u = new URL(`https://${langue}.wikipedia.org/w/api.php`);
   for (const [k, v] of Object.entries({ ...params, format: "json", origin: "*" })) u.searchParams.set(k, v);
   const r = await fetch(u);
   if (!r.ok) throw new Error("Wikipédia ne répond pas");
   return r.json();
 }
+// Plusieurs recherches, on mélange les meilleurs résultats de chacune, puis on lit les articles.
 async function chercherSources(question, statut) {
-  statut("Je choisis les mots-clés…");
-  let mots = question;
+  statut("Je prépare mes recherches…");
+  let recherches = [question];
   try {
     const r = await generer("motscles", [{ role: "user", content: question }], () => {}, {
-      temperature: 0, max_tokens: 60,
-      response_format: { type: "json_object", schema: JSON.stringify({ type: "object", properties: { recherche: { type: "string" } }, required: ["recherche"] }) },
+      temperature: 0.2, max_tokens: 120,
+      response_format: { type: "json_object", schema: JSON.stringify({ type: "object", properties: { recherches: { type: "array", items: { type: "string" } } }, required: ["recherches"] }) },
     });
-    mots = JSON.parse(r.slice(r.indexOf("{"), r.lastIndexOf("}") + 1)).recherche || question;
+    const liste = JSON.parse(r.slice(r.indexOf("{"), r.lastIndexOf("}") + 1)).recherches;
+    if (Array.isArray(liste)) { const propres = liste.map(String).map((x) => x.trim()).filter(Boolean).slice(0, 3); if (propres.length) recherches = propres; }
   } catch (e) { if (stopDemande) throw e; }
-  if (stopDemande) throw new Error("arrêté");
-  statut(`Je cherche « ${mots} » dans Wikipédia…`);
-  const s = await wiki({ action: "query", list: "search", srsearch: mots, srlimit: "3" });
-  const ids = (s.query?.search || []).map((x) => x.pageid);
-  if (!ids.length) return [];
-  statut("Je lis les articles…");
-  const e = await wiki({ action: "query", prop: "extracts|info", inprop: "url", exintro: "1", explaintext: "1", exlimit: "3", pageids: ids.join("|") });
-  return ids.map((id) => e.query?.pages?.[id]).filter((p) => p && p.extract)
-    .map((p) => ({ titre: p.title, url: p.fullurl, texte: p.extract.slice(0, 1500) }));
+  for (const langue of ["fr", "en"]) {
+    if (stopDemande) throw new Error("arrêté");
+    const listes = [];
+    for (const q of langue === "fr" ? recherches : [question, ...recherches].slice(0, 2)) {
+      statut(`Je cherche « ${q} »${langue === "en" ? " dans Wikipédia en anglais" : " dans Wikipédia"}…`);
+      try { const s = await wiki(langue, { action: "query", list: "search", srsearch: q, srlimit: "3" }); listes.push((s.query?.search || []).map((x) => x.pageid)); }
+      catch { listes.push([]); }
+    }
+    const ids = [];
+    for (let rang = 0; rang < 3; rang++) for (const l of listes) if (l[rang] && !ids.includes(l[rang])) ids.push(l[rang]);
+    if (!ids.length) continue;
+    const choisis = ids.slice(0, 4);
+    statut(`Je lis ${choisis.length} article${choisis.length > 1 ? "s" : ""}…`);
+    const e = await wiki(langue, { action: "query", prop: "extracts|info", inprop: "url", exintro: "1", explaintext: "1", exlimit: "4", pageids: choisis.join("|") });
+    const sources = choisis.map((id) => e.query?.pages?.[id]).filter((p) => p && p.extract)
+      .map((p) => ({ titre: p.title + (langue === "en" ? " (en anglais)" : ""), url: p.fullurl, texte: p.extract.slice(0, 1100) }));
+    if (sources.length) return sources;
+  }
+  return [];
 }
 
 // =====================================================================
@@ -687,8 +701,8 @@ async function chercherSources(question, statut) {
 const historiques = {};
 const LIMITE_HISTO = 8; // l'IA locale a une petite mémoire : on garde les derniers messages
 const ACCUEIL = {
-  recherche: "Réveille LeftControl, puis pose ta question. Il cherche dans Wikipédia et cite ses sources.",
-  code: "Décris le programme que tu veux, LeftControl l'écrit pour toi.",
+  recherche: "Réveille LeftControl, puis pose ta question. Il fait plusieurs recherches dans Wikipédia et cite ses sources.",
+  code: "Décris le programme que tu veux : LeftControl l'écrit, le teste et corrige lui-même les erreurs.",
   business: "Choisis un modèle de demande ci-dessus ou décris ton projet.",
 };
 
@@ -697,6 +711,31 @@ function afficherSources(body, sources) {
   const d = document.createElement("div"); d.className = "sources";
   d.innerHTML = "Sources :<ol>" + sources.map((s) => `<li><a href="${echapper(s.url)}" target="_blank" rel="noopener">${echapper(s.titre)}</a> (Wikipédia)</li>`).join("") + "</ol>";
   body.appendChild(d);
+}
+
+// Mode Code : LeftControl lance son programme dans un bac à sable, lit les erreurs et se corrige (2 fois maximum).
+const MAX_CORRECTIONS = 2;
+async function testerEtCorriger(demande, rep, body, ecrire) {
+  const note = (texte, cls) => { const d = document.createElement("div"); d.className = "check " + cls; d.textContent = texte; return d; };
+  const etape = (t) => { rendre(body, rep, false); body.appendChild(note(t, "st-warn")); };
+  for (let essai = 0; ; essai++) {
+    const prog = O.extraireCode(rep);
+    if (!prog) return { rep, bilan: null };
+    etape("Je teste mon programme…");
+    const erreurs = await O.testerProgramme(prog.code, prog.lang === "html" ? "html" : "js");
+    if (!erreurs.length) return { rep, bilan: note(essai ? `Programme testé et corrigé tout seul (${essai} correction${essai > 1 ? "s" : ""}) : aucune erreur.` : "Programme testé : aucune erreur au démarrage.", "st-ok") };
+    const liste = erreurs.slice(0, 3).join(" | ");
+    if (essai >= MAX_CORRECTIONS || stopDemande) return { rep, bilan: note(`Il reste une erreur que je n'ai pas réussi à corriger : ${liste}. Demande-moi de la corriger.`, "st-err") };
+    if (prog.code.length > 6500) return { rep, bilan: note(`Erreur trouvée : ${liste}. Le programme est trop long pour que je le corrige tout seul : demande-moi de corriger cette erreur.`, "st-err") };
+    etape(`Erreur trouvée : ${liste}. Je corrige (essai ${essai + 1}/${MAX_CORRECTIONS})…`);
+    const correction = await generer("code", [
+      { role: "user", content: demande },
+      { role: "assistant", content: rep },
+      { role: "user", content: `J'ai lancé ton programme et il y a ${erreurs.length > 1 ? "ces erreurs" : "cette erreur"} :\n${erreurs.slice(0, 3).join("\n")}\n\nTrouve la cause, corrige-la, et renvoie le fichier complet corrigé dans un seul bloc de code.` },
+    ], ecrire, { temperature: 0.2, max_tokens: 3000 });
+    if (!O.extraireCode(correction)) return { rep, bilan: note(`Erreur trouvée : ${liste}. Ma correction n'a pas marché : demande-moi de réessayer.`, "st-err") };
+    rep = correction;
+  }
 }
 
 for (const m of ["recherche", "code", "business"]) {
@@ -730,9 +769,13 @@ for (const m of ["recherche", "code", "business"]) {
         } else statut("Rien trouvé dans Wikipédia, je réponds avec ce que je sais…");
       }
       if (stopDemande) throw new Error("arrêté");
-      const rep = await generer(m, messages, (t) => { rendre(body, t, false); log.scrollTop = log.scrollHeight; },
-        { temperature: m === "code" ? 0.3 : 0.6, max_tokens: m === "code" ? 3000 : 1500 });
+      const ecrire = (t) => { rendre(body, t, false); log.scrollTop = log.scrollHeight; };
+      let rep = await generer(m, messages, ecrire, { temperature: m === "code" ? 0.3 : 0.6, max_tokens: m === "code" ? 3000 : 1500 });
+      let bilan = null;
+      if (m === "code") ({ rep, bilan } = await testerEtCorriger(texte, rep, body, ecrire));
+      if (m !== "code") rep = O.remplacerCalculs(rep);
       rendre(body, rep, true);
+      if (bilan) body.appendChild(bilan);
       afficherSources(body, sources);
       historiques[m].push({ role: "assistant", content: rep, ...(sources.length ? { sources: sources.map(({ titre, url }) => ({ titre, url })) } : {}) });
       store.set("lc-hist-" + m, historiques[m].slice(-20));
