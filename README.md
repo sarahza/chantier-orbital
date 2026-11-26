@@ -6,7 +6,7 @@ Fore le sol rouge de Balis, construis ta base, fais le plein de ta fusée et dé
 
 ### ▶️ [Jouer maintenant](https://sarahza.github.io/chantier-orbital/)
 
-Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordinateur.
+Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordinateur. Et tu peux jouer **à deux**, sur le même écran ou sur deux appareils !
 
 ### 🤖 [LeftControl, ton agent IA](https://sarahza.github.io/chantier-orbital/agent/)
 
@@ -17,6 +17,23 @@ En bonus, hors du jeu : **LeftControl**, un agent IA qui vit dans ton ordinateur
 - **Business** : business plan, emails, noms et slogans, calcul de prix et de marge.
 
 ---
+
+## 👫 Jouer à deux
+
+- **Sur le même écran** : à l'accueil, clique sur « 2 joueurs : oui ». L'écran se coupe en deux, et le joueur 2 est un Ballis bleu qui joue avec les flèches.
+- **Sur deux appareils** (même Wi-Fi) : bouton « 2 appareils ». Un joueur invite, l'autre rejoint, et chacun recopie un code chez l'autre. Ton ami arrive dans ton monde, en Ballis vert : ce que l'un construit, l'autre le voit !
+- **Le marché des planètes** : fabrique une planète et vends-la à l'autre joueur. Il la paie en Interspace, et elle part chez lui avec tout ce que tu as construit dessus.
+- **Des cadeaux** : donne des Interspace à l'autre joueur.
+
+## 💎 L'Interspace, la monnaie de l'espace
+
+- Gagne des Interspace en **libérant les planètes** envahies par des extraterrestres dangereux : détruis leurs cœurs de colonie !
+- Sur le site « Interspace » de l'ordinateur : tes missions, un bouton « Nouvelle mission », et la **boutique Interspace** (carburant, alliages, électricité, santé, dollars Balis).
+
+## 🌍 Plusieurs mondes
+
+- Bouton « Mes mondes » à l'accueil : **crée autant de mondes que tu veux**, en mode Récolte ou Libre. Chaque monde a sa propre sauvegarde.
+- Renomme-les, change de monde quand tu veux, ou supprime ceux dont tu ne veux plus.
 
 ## 🌌 Un univers immense à explorer
 
@@ -38,6 +55,14 @@ Au nord de Balis s'étend **Balisland**, une vraie ville vivante !
 - Les **Coin-Coin**, les voitures automatiques qui font coin coin : monte dedans !
 - **Des petits boulots** pour aider les Ballis, des mamans à qui donner un coup de main, et **une fête de nuit** avec feux d'artifice chaque samedi soir.
 - Un **bouclier** qui s'allume pour protéger la ville des pluies de météorites.
+- **Des bâtiments bien visibles**, avec leurs grandes pancartes : boulangerie, docteur, mairie, cinéma, bowling, glacier, marché, chocolaterie, pharmacie, la Poste (un colis surprise chaque jour), l'école de Maîtresse Craie, le magasin de jeux vidéo **Balis Games** et la pizzeria de Tonio.
+- **Les Ballis comprennent ce que tu leur écris** : demande « où est la pharmacie ? » et une flèche jaune te montre le chemin !
+- **Deux saisons** : la belle saison avec ses fleurs, et la saison froide avec la neige et l'écharpe rouge de Ballis.
+- **Des maladies rigolotes** (le balhume, la rebondite, les taches bleues…) que le docteur et le Sirop Balis guérissent.
+- **Des chocolats et des bonbons** magiques qui font courir plus vite, sauter plus haut ou briller. Attention à la gourmandise : trop de sucre, et c'est le mal de ventre !
+- **L'électricité** : toutes les machines en ont besoin. Elle vient de la centrale, des éoliennes et des panneaux solaires. Et quand il y a une panne, aide l'électricienne Volta à rebrancher les fils !
+- **Des consoles** (la Ballis, la BalisStation et la Balis Mini), avec plein de jeux vidéo en 3D.
+- **Des rêves** : le soir, dors dans ton lit en guimauve et pars dans l'un des 5 mondes de rêve.
 
 ## 🔬 Deviens un vrai savant
 
@@ -69,6 +94,10 @@ Au nord de Balis s'étend **Balisland**, une vraie ville vivante !
 | G | Manger |
 | U | Parler aux Ballis, monter dans un Coin-Coin, utiliser une machine, caresser tes animaux |
 | B | Bureau scientifique |
+| P | Changer de vue |
+| H | Retour à la base |
 | Échap | Pause |
+
+**Joueur 2 (même écran)** : flèches pour marcher et tourner, Entrée pour sauter, J pour forer, L pour poser, I et K pour regarder en haut et en bas, O pour changer de bloc.
 
 Le jeu tient dans un seul fichier HTML et utilise [Three.js](https://threejs.org/) r128. Ta partie est enregistrée dans ton navigateur.
