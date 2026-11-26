@@ -11948,6 +11948,53 @@ const _nr62=netRender;netRender=function(){_nr62.apply(this,arguments);try{if(!N
   H('Donner des Interspace à mon ami');const r=row();for(const v of [1,5,10])r.append(nwBtn(String(v),()=>mkGive(v)));}catch(e){console.error('mk',e);}};
 CONTRACTS.push({id:'vendeur',t:'Vendeur de planètes',d:'Vends une planète que tu as créée à l’autre joueur',goal:1,val:()=>mkSold(S).length+Object.values(S.plOwn||{}).filter(v=>v===2).length});
 
+/* ================= Version 63 : jouer avec des manettes (la 1re pour le joueur 1, la 2e pour le joueur 2) ================= */
+// Manette (disposition standard, comme Xbox ou PlayStation) :
+// stick gauche : marcher · stick droit : regarder · A : sauter · B : descendre / fermer · X : parler, utiliser · Y : fusée
+// RT : forer · LT : poser · LB / RB : changer de bloc · Start : pause · Select : carte · L3 : courir · R3 : changer de vue
+// croix : haut = moteur, bas = manger, gauche = retour à la base, droite = soute et atelier
+const GP={pads:[],prev:{},on:{},p1:{f:0,s:0,up:false,down:false},set:{mine:false,place:false,run:false},seen:{}};
+const gpDZ=v=>Math.abs(v)<.18?0:(v-Math.sign(v)*.18)/.82;
+function gpList(){let L=[];try{L=[...(navigator.getGamepads?navigator.getGamepads():[])].filter(p=>p&&p.connected!==false);}catch(e){}return L.sort((a,b)=>a.index-b.index);}
+const gpB=(p,i)=>{const b=p.buttons&&p.buttons[i];return !!b&&(b.pressed||b.value>.5);};
+function gpEdge(p,i){const k=p.index+':'+i,now=gpB(p,i),was=!!GP.prev[k];GP.prev[k]=now;return now&&!was;}
+/* --- le joueur 1 --- */
+const _ri63=readInput;readInput=function(){const r=_ri63.apply(this,arguments);const g=GP.p1;r.f+=g.f;r.s+=g.s;r.f=Math.max(-1,Math.min(1,r.f));r.s=Math.max(-1,Math.min(1,r.s));if(g.up)r.up=true;if(g.down)r.down=true;return r;};
+function gpP1(p,dt){const ax=p.axes||[];const lx=gpDZ(ax[0]||0),ly=gpDZ(ax[1]||0),rx=gpDZ(ax[2]||0),ry=gpDZ(ax[3]||0),g=GP.p1;
+  // le menu d'accueil et la pause
+  if(gpEdge(p,9)){if(!ov.hidden){if(!ovP.disabled)ovP.click();}else if(playing&&!uiOpen())pause();}
+  if(!playing){g.f=g.s=0;g.up=g.down=false;return;}
+  if(gpEdge(p,1)){if(talkOpen)closeTalk();else if(panelOpen)closePanel();else if(mapOpen)closeMap();else if(labOpen)closeLab();else if(!$('#pc').hidden)closeTalk();}
+  if(gpEdge(p,8))toggleMap();
+  if(gpEdge(p,15))togglePanel();
+  if(uiOpen()){g.f=g.s=0;g.up=g.down=false;gpRelease();return;}
+  g.f=-ly;g.s=lx;g.up=gpB(p,0);g.down=gpB(p,1);
+  if(rx||ry)look(rx*dt*1150,ry*dt*900);
+  const mine=gpB(p,7),place=gpB(p,6),run=gpB(p,10);
+  if(mine!==GP.set.mine){touch.mine=mine;GP.set.mine=mine;}if(place!==GP.set.place){touch.place=place;GP.set.place=place;}if(run!==GP.set.run){keys.KeyX=run;GP.set.run=run;}
+  const n=S.hotbar.length;if(gpEdge(p,4))selectSlot((S.sel+n-1)%n);if(gpEdge(p,5))selectSlot((S.sel+1)%n);
+  if(gpEdge(p,2))useAction();if(gpEdge(p,3))enterShip();if(gpEdge(p,11))toggleView();
+  if(gpEdge(p,12))toggleEngine();if(gpEdge(p,13))eat();if(gpEdge(p,14))goHome();}
+function gpRelease(){if(GP.set.mine){touch.mine=false;GP.set.mine=false;}if(GP.set.place){touch.place=false;GP.set.place=false;}if(GP.set.run){keys.KeyX=false;GP.set.run=false;}}
+/* --- le joueur 2 : la deuxième manette --- */
+function gpP2(p,dt){if(gpEdge(p,9)&&!p2.on){p2Set(true);try{const b=$('#ov2j');if(b)b.textContent='2 joueurs : oui';}catch(e){}toast('La manette 2 joue le joueur 2, le Ballis bleu !',5000,true);}
+  const K=p2.k;if(!p2.on||!playing||uiOpen()){for(const c of ['ArrowUp','ArrowDown','Enter','KeyJ','KeyL'])if(GP.on[c]){K[c]=false;GP.on[c]=false;}return;}
+  const ax=p.axes||[];const lx=gpDZ(ax[0]||0),ly=gpDZ(ax[1]||0),rx=gpDZ(ax[2]||0),ry=gpDZ(ax[3]||0);
+  const hold=(c,v)=>{if(v!==!!GP.on[c]){K[c]=v;GP.on[c]=v;}};
+  hold('ArrowUp',ly<-.3);hold('ArrowDown',ly>.3);hold('Enter',gpB(p,0));hold('KeyJ',gpB(p,7));hold('KeyL',gpB(p,6));
+  p2.yaw-=(lx+rx)*2.6*dt;p2.pitch=Math.max(-1.4,Math.min(1.2,p2.pitch-ry*1.6*dt));
+  const n=S.hotbar.length;if(gpEdge(p,5)){p2.sel=(p2.sel+1)%n;p2Hud();}if(gpEdge(p,4)){p2.sel=(p2.sel+n-1)%n;p2Hud();}}
+/* --- la boucle des manettes --- */
+function gpTick(dt){const L=gpList();GP.pads=L;
+  for(const p of L)if(!GP.seen[p.index]){GP.seen[p.index]=1;const k=L.indexOf(p);toast(k===0?'Manette branchée : elle joue le joueur 1 ! (Start pour jouer)':'Deuxième manette branchée : appuie sur Start pour activer le joueur 2 !',6000,true);}
+  if(!L.length){GP.p1.f=GP.p1.s=0;GP.p1.up=GP.p1.down=false;gpRelease();return;}
+  gpP1(L[0],dt);if(L[1])gpP2(L[1],dt);}
+window.addEventListener('gamepaddisconnected',e=>{try{delete GP.seen[e.gamepad.index];toast('Une manette est débranchée.',3000);gpRelease();}catch(x){}});
+let g63last=performance.now();
+(function g63Loop(){requestAnimationFrame(g63Loop);const now=performance.now(),dt=Math.min(.05,(now-g63last)/1000);g63last=now;try{if(S&&S.cal)gpTick(dt);}catch(e){}})();
+/* --- les touches de la manette, sur l'accueil --- */
+{const dl=$('#ctrlDesk');if(dl)dl.insertAdjacentHTML('beforeend','<dt>Manette</dt><dd>Stick gauche : marcher · stick droit : regarder · A : sauter · B : descendre · X : parler · Y : fusée · RT : forer · LT : poser · LB / RB : bloc · Start : pause · Select : carte · croix : moteur, manger, base, soute. La 2e manette joue le joueur 2.</dd>');}
+
 function djPay(M){const v=new Set(M.mix.ev.map(e=>e[1]+e[2])).size;let pay=8+Math.min(20,v*2);if(festival())pay*=2;
   S.djDay=S.cal.d;S.stats.djGig=(S.stats.djGig||0)+1;earn(pay);bigText('Bravo DJ Ballis !',2);
   toast('Les Ballis ont adoré ton mix'+(v>=6?' : il y avait plein de changements et d’effets !':'. La prochaine fois, ajoute des effets et des changements : tu gagneras plus !')+' Le maire te paie '+pay+' $B.',7000,true);

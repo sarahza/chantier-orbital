@@ -6,7 +6,7 @@ Fore le sol rouge de Balis, construis ta base, fais le plein de ta fusée et dé
 
 ### ▶️ [Jouer maintenant](https://sarahza.github.io/chantier-orbital/)
 
-Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordinateur. Et tu peux jouer **à deux**, sur le même écran ou sur deux appareils !
+Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordinateur. Et tu peux jouer **à deux**, sur le même écran ou sur deux appareils, au clavier ou **à la manette** !
 
 ### 🤖 [LeftControl, ton agent IA](https://sarahza.github.io/chantier-orbital/agent/)
 
@@ -99,5 +99,20 @@ Au nord de Balis s'étend **Balisland**, une vraie ville vivante !
 | Échap | Pause |
 
 **Joueur 2 (même écran)** : flèches pour marcher et tourner, Entrée pour sauter, J pour forer, L pour poser, I et K pour regarder en haut et en bas, O pour changer de bloc.
+
+### 🎮 Avec une manette
+
+Branche une manette (Xbox, PlayStation ou une autre), et joue sans clavier ! La **2e manette** joue le joueur 2 : appuie sur Start pour l'activer.
+
+| Manette | Action |
+| --- | --- |
+| Stick gauche / stick droit | Marcher / regarder |
+| A / B | Sauter / descendre (B ferme aussi les fenêtres) |
+| X / Y | Parler, utiliser / monter dans la fusée |
+| RT / LT | Forer / poser un bloc |
+| LB / RB | Changer de bloc |
+| Start / Select | Pause / carte des galaxies |
+| L3 / R3 | Courir / changer de vue |
+| Croix | Haut : moteur · bas : manger · gauche : retour à la base · droite : soute et atelier |
 
 Le jeu tient dans un seul fichier HTML et utilise [Three.js](https://threejs.org/) r128. Ta partie est enregistrée dans ton navigateur.
