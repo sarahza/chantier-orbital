@@ -21,7 +21,9 @@ En bonus, hors du jeu : **LeftControl**, un agent IA qui vit dans ton ordinateur
 ## 👫 Jouer à deux
 
 - **Sur le même écran** : à l'accueil, clique sur « 2 joueurs : oui ». L'écran se coupe en deux, et le joueur 2 est un Ballis bleu qui joue avec les flèches.
-- **Sur deux appareils** : bouton « 2 appareils ». Choisissez un petit code ensemble, par exemple **12**. Un joueur clique sur « Inviter », l'autre tape le même code et clique sur « Rejoindre ». Celui qui invite choisit **Accepter** ou **Refuser**. Ton ami arrive dans ton monde, en Ballis vert : ce que l'un construit, l'autre le voit ! Il faut Internet, mais pas besoin d'être sur le même Wi-Fi.
+- **Les mondes publics** : bouton « Multijoueur », puis « Voir les mondes publics ». Clique sur « Entrer » pour demander à visiter le monde d'un autre joueur. Il choisit **Accepter** ou **Refuser**.
+- **Des mondes pour tout le monde** : en créant un monde (« Mes mondes »), choisis « Pour tout le monde ». Quand tu y joues, il apparaît dans la liste des mondes publics, et c'est toi qui acceptes ou refuses ceux qui veulent entrer.
+- **Avec un code, entre amis** : bouton « Multijoueur ». Choisissez un petit code ensemble, par exemple **12**. Un joueur clique sur « Inviter », l'autre tape le même code et clique sur « Rejoindre ». Celui qui invite choisit **Accepter** ou **Refuser**. Ton ami arrive dans ton monde, en Ballis vert : ce que l'un construit, l'autre le voit ! Il faut Internet, mais pas besoin d'être sur le même Wi-Fi.
 - **Sans Internet** (même Wi-Fi) : l'autre méthode, avec un long code à recopier dans chaque sens.
 - **Le marché des planètes** : fabrique une planète et vends-la à l'autre joueur. Il la paie en Interspace, et elle part chez lui avec tout ce que tu as construit dessus.
 - **Des cadeaux** : donne des Interspace à l'autre joueur.
@@ -33,7 +35,7 @@ En bonus, hors du jeu : **LeftControl**, un agent IA qui vit dans ton ordinateur
 
 ## 🌍 Plusieurs mondes
 
-- Bouton « Mes mondes » à l'accueil : **crée autant de mondes que tu veux**, en mode Récolte ou Libre. Chaque monde a sa propre sauvegarde.
+- Bouton « Mes mondes » à l'accueil : **crée autant de mondes que tu veux**, en mode Récolte ou Libre, rien que pour toi ou **pour tout le monde**. Chaque monde a sa propre sauvegarde.
 - Renomme-les, change de monde quand tu veux, ou supprime ceux dont tu ne veux plus.
 
 ## 🌌 Un univers immense à explorer
@@ -97,7 +99,7 @@ Au nord de Balis s'étend **Balisland**, une vraie ville vivante !
 | B | Bureau scientifique |
 | P | Changer de vue |
 | H | Retour à la base |
-| Échap | Pause |
+| Échap ou bouton « Menu » | Pause et menu (aussi sur téléphone) |
 
 **Joueur 2 (même écran)** : flèches pour marcher et tourner, Entrée pour sauter, J pour forer, L pour poser, I et K pour regarder en haut et en bas, O pour changer de bloc.
 
