@@ -11879,7 +11879,7 @@ function netRender(){const B=NW.querySelector('#nwBody');if(!B)return;B.innerHTM
     r.append(nwBtn('Valider',async()=>{try{netStatus('Je prépare ton code de réponse…');const c=await netJoin(t.value);out.innerHTML='';out.append(nwE('p','margin:10px 0 4px','2. Donne ce code de réponse à ton ami, pour qu’il le tape chez lui :'),nwCode(c));netStatus('En attente de ton ami…');}catch(e){netStatus('Oups : '+e.message,true);}},true),
       nwBtn('Retour',()=>{netClose();nwStep='menu';netStatus('');netRender();}));B.append(r,out);}}
 function netShow(){if(!NET.ok&&!NET.visit&&!NET.pc)nwStep='menu';netRender();NW.hidden=false;}
-{const b=document.createElement('button');b.id='ovNet';b.type='button';b.className='btn ghost';b.textContent='2 appareils';b.addEventListener('click',netShow);$('#overlay .ov-actions').appendChild(b);}
+{const b=document.createElement('button');b.id='ovNet';b.type='button';b.className='btn ghost';b.textContent='2 appareils';b.addEventListener('click',()=>netShow());$('#overlay .ov-actions').appendChild(b);}
 /* pendant une visite, on ne change pas de monde */
 if(typeof mondesShow==='function'){const _ms61=mondesShow;mondesShow=function(){if(NET.visit){toast('Tu es dans le monde de ton ami. Rentre d’abord dans ton monde (bouton « 2 appareils »).',5000);return;}return _ms61.apply(this,arguments);};
   const b=$('#ovMondes');if(b){const nb=b.cloneNode(true);b.replaceWith(nb);nb.addEventListener('click',()=>mondesShow());}}
@@ -11994,6 +11994,82 @@ let g63last=performance.now();
 (function g63Loop(){requestAnimationFrame(g63Loop);const now=performance.now(),dt=Math.min(.05,(now-g63last)/1000);g63last=now;try{if(S&&S.cal)gpTick(dt);}catch(e){}})();
 /* --- les touches de la manette, sur l'accueil --- */
 {const dl=$('#ctrlDesk');if(dl)dl.insertAdjacentHTML('beforeend','<dt>Manette</dt><dd>Stick gauche : marcher · stick droit : regarder · A : sauter · B : descendre · X : parler · Y : fusée · RT : forer · LT : poser · LB / RB : bloc · Start : pause · Select : carte · croix : moteur, manger, base, soute. La 2e manette joue le joueur 2.</dd>');}
+
+/* ================= Version 64 : un petit code qu'on choisit soi-même (par exemple 12) pour jouer sur deux appareils ================= */
+// Les deux appareils se retrouvent grâce à un point de rendez-vous gratuit sur Internet (PeerJS), sans compte.
+// L'hôte choisit un code et invite ; l'ami tape le même code et rejoint ; l'hôte accepte ou refuse.
+const PJ={code:'',req:null,load:null};
+const PJ_URLS=['https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js','https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
+const PJ_NET='Je n’arrive pas à joindre le point de rendez-vous. Vérifie qu’Internet marche, ou utilise l’autre méthode (le long code, sur le même Wi-Fi).';
+const pjPeer=()=>window.Peer||(window.peerjs&&window.peerjs.Peer)||null;
+function pjLoad(){if(pjPeer())return Promise.resolve(pjPeer());if(PJ.load)return PJ.load;
+  PJ.load=new Promise((res,rej)=>{let i=0;const next=()=>{if(i>=PJ_URLS.length){PJ.load=null;rej(new Error(PJ_NET));return;}
+    const s=document.createElement('script');s.src=PJ_URLS[i++];s.async=true;s.onload=()=>{const P=pjPeer();if(P)res(P);else next();};s.onerror=()=>{s.remove();next();};document.head.appendChild(s);};next();});
+  return PJ.load;}
+const pjNorm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'').slice(0,16);
+const pjId=c=>'chantier-orbital-'+c;
+/* une connexion PeerJS habillée comme le canal de la version 61 (open, close, message) */
+function pjDc(conn){const L={};const a={readyState:'connecting',conn,_pre:null,_fail:null,
+  addEventListener(t,f){(L[t]||(L[t]=[])).push(f);},send(s){conn.send(s);},close(){try{conn.close();}catch(e){}},
+  _fire(t,e){for(const f of L[t]||[])f(e||{});},go(){a.readyState='open';a._fire('open');}};
+  conn.on('data',d=>{const s=typeof d==='string'?d:String(d);if(a.readyState!=='open'){if(a._pre)a._pre(s);return;}a._fire('message',{data:s});});
+  conn.on('close',()=>{if(a.readyState==='closed')return;const was=a.readyState==='open';a.readyState='closed';if(was)a._fire('close');else if(a._fail)a._fail();});
+  return a;}
+function pjErr(e){const t=e&&e.type;if(t==='unavailable-id')return 'Ce code est déjà pris par quelqu’un d’autre. Choisissez un autre code !';
+  if(t==='peer-unavailable')return 'Personne n’invite avec le code '+PJ.code+' en ce moment. Vérifie le code, et que ton ami a bien cliqué sur « Inviter ».';
+  if(t==='invalid-id')return 'Ce code ne marche pas : utilise seulement des chiffres et des lettres.';return PJ_NET;}
+function pjFail(msg){const p=NET.peer;NET.peer=null;PJ.req=null;try{if(p)p.destroy();}catch(e){}nwStep='menu';netRender();netStatus(msg,true);}
+/* --- l'hôte invite avec son code --- */
+async function pjHost(code){netClose();NET.role='hote';PJ.code=code;netStatus('Je prépare l’invitation…');
+  let Peer;try{Peer=await pjLoad();}catch(e){pjFail(e.message);return;}
+  const peer=new Peer(pjId(code),{debug:0});NET.peer=peer;nwStep='pjHote';netRender();
+  peer.on('open',()=>{if(NET.peer!==peer)return;netStatus('');netRender();});
+  peer.on('connection',conn=>{if(NET.peer!==peer)return;
+    if(NET.ok||PJ.req){conn.on('open',()=>{try{conn.send('#occupe');}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},800);});return;}
+    PJ.req=conn;conn.on('open',()=>{if(PJ.req===conn)pjAsk();});conn.on('close',()=>{if(PJ.req===conn){PJ.req=null;if(nwStep==='pjDemande')nwStep='pjHote';netRender();}});});
+  peer.on('error',e=>{if(NET.peer!==peer)return;if(NET.ok&&e&&e.type!=='unavailable-id')return;pjFail(pjErr(e));});
+  peer.on('disconnected',()=>{if(NET.peer===peer&&!peer.destroyed){try{peer.reconnect();}catch(e){}}});}
+function pjAsk(){nwStep='pjDemande';if(playing)pause();netRender();NW.hidden=false;netStatus('');tone(880,.12,'triangle',.06);toast('Quelqu’un veut entrer dans ton monde !',5000,true);}
+function pjAccept(){const conn=PJ.req;if(!conn)return;PJ.req=null;nwStep='pjHote';try{conn.send('#oui');}catch(e){}const a=pjDc(conn);netWire(a);a.go();}
+function pjRefuse(){const conn=PJ.req;PJ.req=null;nwStep='pjHote';if(conn){try{conn.send('#non');}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},800);}netRender();netStatus('Tu as dit non. Personne n’est entré.');}
+/* --- l'ami rejoint avec le même code --- */
+async function pjJoin(code){netClose();NET.role='ami';PJ.code=code;netStatus('Je cherche le monde avec le code '+code+'…');
+  let Peer;try{Peer=await pjLoad();}catch(e){pjFail(e.message);return;}
+  const peer=new Peer({debug:0});NET.peer=peer;nwStep='pjAmi';netRender();
+  peer.on('open',()=>{if(NET.peer!==peer)return;const conn=peer.connect(pjId(code),{serialization:'raw',reliable:true});const a=pjDc(conn);
+    a._pre=d=>{if(d==='#oui'){netStatus('Ton ami a dit oui !');netWire(a);a.go();}else if(d==='#non')pjFail('Ton ami a dit non. Demande-lui d’accepter, puis réessaie.');else if(d==='#occupe')pjFail('Ton ami joue déjà avec quelqu’un d’autre.');};
+    a._fail=()=>{if(NET.peer===peer)pjFail('La connexion s’est arrêtée. Réessaie.');};
+    conn.on('open',()=>{if(NET.peer===peer)netStatus('J’ai trouvé ton ami ! Il doit cliquer sur « Accepter »…');});});
+  peer.on('error',e=>{if(NET.peer!==peer||NET.ok)return;pjFail(pjErr(e));});}
+/* --- fermer aussi le point de rendez-vous --- */
+const _nc64=netClose;netClose=function(){const p=NET.peer;NET.peer=null;PJ.req=null;try{if(p)p.destroy();}catch(e){}return _nc64.apply(this,arguments);};
+netShow=function(){if(!NET.ok&&!NET.visit&&!NET.pc&&!NET.peer)nwStep='menu';netRender();NW.hidden=false;};
+/* --- la fenêtre « 2 appareils », avec le petit code --- */
+const PJ_STEPS=['menu','pjHote','pjAmi','pjDemande'];
+const _nr64=netRender;netRender=function(){if(NET.ok||NET.visit||!PJ_STEPS.includes(nwStep))return _nr64.apply(this,arguments);
+  const B=NW.querySelector('#nwBody');if(!B)return;B.innerHTML='';const P=(t,css)=>B.appendChild(nwE('p','margin:10px 0 4px'+(css||''),t));
+  const row=()=>B.appendChild(nwE('div','display:flex;flex-wrap:wrap;gap:8px;margin-top:8px'));
+  if(nwStep!=='menu'&&!NET.peer)nwStep='menu';
+  if(nwStep==='menu'){P('Choisissez un code ensemble, par exemple 12 ou fusee. Un joueur clique sur « Inviter », l’autre tape le même code et clique sur « Rejoindre ». Il faut Internet, mais pas besoin d’être sur le même Wi-Fi.');
+    const t=document.createElement('input');t.type='text';t.maxLength=16;t.placeholder='Votre code, par exemple 12';t.value=PJ.code||'';t.id='pjCode';
+    t.style.cssText='width:100%;box-sizing:border-box;padding:10px;margin-top:6px;border-radius:8px;border:1px solid #5adf6a;background:#120f1e;color:#fff;font:bold 22px ui-monospace,monospace;text-align:center';B.append(t);
+    const go=f=>()=>{const c=pjNorm(t.value);if(!c){netStatus('Choisis d’abord un code, par exemple 12 !',true);t.focus();return;}f(c);};
+    const r=row();r.append(nwBtn('Inviter avec ce code',go(pjHost),true),nwBtn('Rejoindre avec ce code',go(pjJoin)));
+    P('Pas d’Internet ? Autre méthode, sur le même Wi-Fi, avec un long code à recopier :','font-size:13px;opacity:.8;margin-top:18px;border-top:1px solid #3a3450;padding-top:10px');
+    const r2=row();r2.append(nwBtn('Inviter (long code)',async()=>{nwStep='hote';netRender();netStatus('Je prépare le code…');try{await netHost();netStatus('');}catch(e){netStatus('Oups : '+e.message,true);}netRender();}),
+      nwBtn('Rejoindre (long code)',()=>{nwStep='ami';netStatus('');netRender();}));return;}
+  if(nwStep==='pjHote'){P('Ton code :');B.append(nwCode(PJ.code));
+    P('Dis ce code à ton ami. Sur son appareil, il clique sur « 2 appareils », tape '+PJ.code+' et clique sur « Rejoindre avec ce code ». Tu pourras accepter ou refuser.');
+    const r=row();r.append(nwBtn('Jouer en attendant',()=>{NW.hidden=true;if(!ovP.disabled)startPlay();},true),nwBtn('Annuler',()=>{netClose();nwStep='menu';netStatus('');netRender();}));return;}
+  if(nwStep==='pjDemande'){P('Quelqu’un veut entrer dans ton monde avec le code '+PJ.code+' !','font-size:18px;font-weight:bold');
+    const r=row();r.append(nwBtn('Accepter',pjAccept,true),nwBtn('Refuser',pjRefuse));return;}
+  if(nwStep==='pjAmi'){P('Je cherche le monde de ton ami avec le code '+PJ.code+'…');const r=row();r.append(nwBtn('Annuler',()=>{netClose();nwStep='menu';netStatus('');netRender();}));}};
+/* --- la manette ferme aussi les fenêtres « 2 appareils » et « Mes mondes » --- */
+const _gp64=gpP1;gpP1=function(p,dt){const w=!NW.hidden?NW:(!MW.hidden?MW:null);
+  if(w){if(gpEdge(p,1))w.hidden=true;else if(gpEdge(p,9)){w.hidden=true;if(!ov.hidden&&!ovP.disabled)ovP.click();}
+    const g=GP.p1;g.f=g.s=0;g.up=g.down=false;gpRelease();return;}
+  if(!playing)GP.prev[p.index+':1']=gpB(p,1);
+  return _gp64.apply(this,arguments);};
 
 function djPay(M){const v=new Set(M.mix.ev.map(e=>e[1]+e[2])).size;let pay=8+Math.min(20,v*2);if(festival())pay*=2;
   S.djDay=S.cal.d;S.stats.djGig=(S.stats.djGig||0)+1;earn(pay);bigText('Bravo DJ Ballis !',2);

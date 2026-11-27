@@ -21,7 +21,8 @@ En bonus, hors du jeu : **LeftControl**, un agent IA qui vit dans ton ordinateur
 ## 👫 Jouer à deux
 
 - **Sur le même écran** : à l'accueil, clique sur « 2 joueurs : oui ». L'écran se coupe en deux, et le joueur 2 est un Ballis bleu qui joue avec les flèches.
-- **Sur deux appareils** (même Wi-Fi) : bouton « 2 appareils ». Un joueur invite, l'autre rejoint, et chacun recopie un code chez l'autre. Ton ami arrive dans ton monde, en Ballis vert : ce que l'un construit, l'autre le voit !
+- **Sur deux appareils** : bouton « 2 appareils ». Choisissez un petit code ensemble, par exemple **12**. Un joueur clique sur « Inviter », l'autre tape le même code et clique sur « Rejoindre ». Celui qui invite choisit **Accepter** ou **Refuser**. Ton ami arrive dans ton monde, en Ballis vert : ce que l'un construit, l'autre le voit ! Il faut Internet, mais pas besoin d'être sur le même Wi-Fi.
+- **Sans Internet** (même Wi-Fi) : l'autre méthode, avec un long code à recopier dans chaque sens.
 - **Le marché des planètes** : fabrique une planète et vends-la à l'autre joueur. Il la paie en Interspace, et elle part chez lui avec tout ce que tu as construit dessus.
 - **Des cadeaux** : donne des Interspace à l'autre joueur.
 
