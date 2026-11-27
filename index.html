@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Chantier Orbital"><meta name="theme-color" content="#04060b">
 <title>Chantier Orbital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -5477,7 +5477,7 @@ function updateCamera(dt){
   const d=lookDir();
   let pv;
   if(inShip){pv={x:sh.x,y:sh.y+3,z:sh.z};const cdT=(sh.engine==='countdown'||autoT>0)?16:12;camDist+=(cdT-camDist)*Math.min(1,dt*2);}
-  else if(camMode==='third'){pv={x:pos.x,y:pos.y+EYE+.35,z:pos.z};camDist+=(4.2-camDist)*Math.min(1,dt*6);}
+  else if(camMode==='third'){pv={x:pos.x,y:pos.y+EYE+.35,z:pos.z};camDist+=(etrDist()-camDist)*Math.min(1,dt*6);}
   else{pv={x:pos.x,y:pos.y+EYE-(CROUCH?.3:0),z:pos.z};camPos.x=pv.x;camPos.y=pv.y;camPos.z=pv.z;return;}
   let dist=camDist;const back=raycast(pv.x,pv.y,pv.z,-d[0],-d[1],-d[2],dist);
   if(back)dist=Math.max(.4,back.t-.3);
@@ -5595,7 +5595,7 @@ function frame(now){
   // tremblement et grand angle pendant les décollages
   const sk=shake>.002?shake:0;
   camera.position.set(camPos.x+(Math.random()-.5)*sk,camPos.y+(Math.random()-.5)*sk,camPos.z+(Math.random()-.5)*sk);camera.rotation.x=pitch;camera.rotation.y=yaw;
-  const fovT=72+(inShip?Math.min(18,Math.hypot(sh.vx,sh.vy,sh.vz)*.55):0)+(warp&&!warp.swapped?warp.t*38:0);
+  const fovT=regFov()+(inShip?Math.min(18,Math.hypot(sh.vx,sh.vy,sh.vz)*.55):0)+(warp&&!warp.swapped?warp.t*38:0);
   if(Math.abs(camera.fov-fovT)>.05){camera.fov+=(fovT-camera.fov)*Math.min(1,dt*3);camera.updateProjectionMatrix();}
   updateClouds(dt);updateFallers(dt);
   updateSky(dt);if(playing&&!uiOpen())updateEvents(dt);
@@ -12125,6 +12125,137 @@ const _sp65=startPlay;startPlay=function(){const r=_sp65.apply(this,arguments);t
 {const row=$('#topright .hud-row');if(row){const b=document.createElement('button');b.id='btnMenu';b.type='button';b.className='hud-btn';b.innerHTML='Menu <kbd>Échap</kbd>';
   b.style.cssText='background:#ffd23a;color:#1e1a2e;font-weight:bold;border-color:#ffd23a';
   b.addEventListener('click',e=>{e.stopPropagation();if(playing)pause();});row.insertBefore(b,row.firstChild);}}
+
+/* ================= Version 66 : le mode « écran étroit » pour les téléphones ================= */
+// - une vue plus large quand l'écran est en hauteur (on voit beaucoup mieux sur les côtés)
+// - le HUD et les boutons tactiles plus petits et bien rangés, pour libérer l'écran
+// - le plein écran sur téléphone
+const ETR={on:false,pref:'auto'};
+try{ETR.pref=localStorage.getItem('co-ecran')||'auto';}catch(e){}
+function etrDist(){return ETR.on?5.4:4.2;}
+/* --- une vue plus large quand l'écran est étroit --- */
+{const _upm=camera.updateProjectionMatrix.bind(camera);
+  camera.updateProjectionMatrix=function(){const f=this.fov,a=this.aspect||1;
+    if(a<1.3){const h=2*Math.atan(Math.tan(f*Math.PI/360)*1.3);const want=2*Math.atan(Math.tan(h/2)/a)*180/Math.PI;const e=Math.max(f,Math.min(110,want));
+      if(e!==f){this.fov=e;_upm();this.fov=f;return;}}
+    _upm();};}
+/* --- le style de l'écran étroit --- */
+{const st=document.createElement('style');st.textContent=`
+body.etroit #topleft{width:auto;max-width:calc(100vw - 150px);gap:4px;top:calc(6px + env(safe-area-inset-top,0px));left:calc(6px + env(safe-area-inset-left,0px))}
+body.etroit #status{padding:5px 8px;gap:4px;pointer-events:auto;cursor:pointer}
+body.etroit .brand{font-size:13px}
+body.etroit #status .readout,body.etroit #status .chips{display:none}
+body.etroit #status.ouvert .readout{display:block;font-size:10px}
+body.etroit #status.ouvert .chips{display:flex;gap:3px}
+body.etroit #status .chip{font-size:8.5px;padding:1px 4px}
+body.etroit #surv{padding:4px 8px;gap:2px;width:136px}
+body.etroit .sv{grid-template-columns:44px 1fr 20px;gap:4px;font-size:9.5px}
+body.etroit .sv b{font-size:9px}
+body.etroit .sv .track{height:5px}
+body.etroit #surv .chips{display:none}
+body.etroit #shipHud{padding:5px 8px;gap:4px;font-size:11px;max-width:200px}
+body.etroit #shipHud .readout{font-size:10px}
+body.etroit #topright{width:auto;max-width:150px;gap:4px;top:calc(6px + env(safe-area-inset-top,0px));right:calc(6px + env(safe-area-inset-right,0px))}
+body.etroit .hud-row{gap:4px}
+body.etroit .hud-btn{padding:4px 7px;font-size:11px}
+body.etroit .hud-btn kbd{display:none}
+body.etroit #btnSave,body.etroit #btnSound{display:none}
+body.etroit #contracts{max-width:150px}
+body.etroit #cHead{font-size:10.5px;padding:5px 8px}
+body.etroit #cHead span{font-size:10px}
+body.etroit #cList{max-height:28vh;overflow:auto;padding:0 8px 6px;gap:5px}
+body.etroit .ct{font-size:11px}
+body.etroit .cd{font-size:10px}
+body.etroit #bottom{bottom:calc(6px + env(safe-area-inset-bottom,0px));gap:3px;max-width:calc(100vw - 12px)}
+body.etroit #selName{font-size:12px}
+body.etroit #selName small{font-size:10px}
+body.etroit #hotbar{gap:2px;padding:3px;max-width:calc(100vw - 12px);overflow-x:auto;scrollbar-width:none}
+body.etroit .slot{width:34px;height:34px;flex:none}
+body.etroit .slot img{width:24px;height:24px}
+body.etroit .slot .n{display:none}
+body.etroit .slot .q{font-size:9px;right:2px;bottom:0}
+body.etroit #joy{width:104px;height:104px;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+body.etroit #knob{width:44px;height:44px;margin:-22px 0 0 -22px}
+body.etroit .tbtns{right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(66px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(2,54px);gap:8px}
+body.etroit .tb{width:54px;height:54px;font-size:10px}
+body.etroit .tsmall{position:fixed;left:calc(6px + env(safe-area-inset-left,0px));right:calc(6px + env(safe-area-inset-right,0px));bottom:calc(190px + env(safe-area-inset-bottom,0px));justify-content:center;gap:5px;pointer-events:none}
+body.etroit .tsmall .tb{width:40px;height:40px;font-size:8px;letter-spacing:0;pointer-events:auto}
+body.etroit #toasts{bottom:calc(240px + env(safe-area-inset-bottom,0px));width:calc(100vw - 20px)}
+body.etroit #prompt{bottom:calc(240px + env(safe-area-inset-bottom,0px));font-size:12px;max-width:calc(100vw - 20px);white-space:normal}
+body.etroit #target{font-size:11px}
+body.etroit #big{font-size:clamp(34px,11vw,64px)}
+@media (orientation:landscape){
+  body.etroit .tsmall{bottom:calc(64px + env(safe-area-inset-bottom,0px));left:50%;right:auto;transform:translateX(-50%)}
+  body.etroit #toasts,body.etroit #prompt{bottom:calc(112px + env(safe-area-inset-bottom,0px));width:min(460px,calc(100vw - 260px))}
+  body.etroit #contracts #cList{max-height:22vh}
+}
+`;document.head.appendChild(st);}
+/* --- quand passer en écran étroit --- */
+function etrAuto(){return innerWidth<760||innerHeight<480;}
+function etrApply(){const on=ETR.pref==='etroit'||(ETR.pref==='auto'&&etrAuto());if(on!==ETR.on){ETR.on=on;document.body.classList.toggle('etroit',on);const c=$('#contracts');if(on&&c)c.classList.add('collapsed');}
+  const f=$('#btnPlein');if(f){f.hidden=!(isTouch||ETR.on)||!etrFsOk();f.textContent=etrFs()?'Quitter le plein écran':'Plein écran';}}
+addEventListener('resize',etrApply);addEventListener('orientationchange',()=>setTimeout(()=>{etrApply();try{resize();}catch(e){}},250));
+/* --- toucher le cadre en haut à gauche pour voir tous les détails --- */
+{const s=$('#status');if(s)s.addEventListener('click',()=>{if(ETR.on)s.classList.toggle('ouvert');});}
+/* --- le plein écran --- */
+const etrFsOk=()=>!!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen);
+const etrFs=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+function etrFsGo(){try{const d=document.documentElement;const p=d.requestFullscreen?d.requestFullscreen({navigationUI:'hide'}):d.webkitRequestFullscreen&&d.webkitRequestFullscreen();if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+function etrFsStop(){try{const p=document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen&&document.webkitExitFullscreen();if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+for(const ev of ['fullscreenchange','webkitfullscreenchange'])document.addEventListener(ev,()=>setTimeout(()=>{etrApply();try{resize();}catch(e){}},120));
+{const row=$('#topright .hud-row');if(row){const b=document.createElement('button');b.id='btnPlein';b.type='button';b.className='hud-btn';b.hidden=true;b.textContent='Plein écran';
+  b.addEventListener('click',e=>{e.stopPropagation();if(etrFs())etrFsStop();else etrFsGo();});row.appendChild(b);}}
+/* sur téléphone, le jeu passe en plein écran quand on clique sur « Jouer » */
+let etrAstuce=false;
+const _sp66=startPlay;startPlay=function(){const r=_sp66.apply(this,arguments);try{
+  if(isTouch&&ETR.on&&!etrFs()){if(etrFsOk())etrFsGo();
+    else if(!etrAstuce&&!(navigator.standalone||matchMedia('(display-mode: standalone)').matches)){etrAstuce=true;let vu=false;try{vu=localStorage.getItem('co-astuce-ios')==='1';localStorage.setItem('co-astuce-ios','1');}catch(e){}
+      if(!vu)toast('Pour jouer en plein écran sur iPhone : bouton Partager, puis « Sur l’écran d’accueil ».',8000,true);}}
+  etrApply();}catch(e){}return r;};
+etrApply();try{resize();}catch(e){}
+
+/* ================= Version 67 : la fenêtre des réglages ================= */
+// Écran (automatique, étroit, normal), plein écran, son, vue, champ de vision, vitesse pour regarder, regard inversé, sauvegarder.
+const REG={fov:72,sens:1,inv:false};
+try{Object.assign(REG,JSON.parse(localStorage.getItem('co-reglages')||'{}'));}catch(e){}
+function regSave(){try{localStorage.setItem('co-reglages',JSON.stringify(REG));}catch(e){}}
+function regFov(){return [62,72,84,96].includes(REG.fov)?REG.fov:72;}
+/* la vitesse pour regarder et le regard inversé, pour la souris, le doigt et la manette */
+const _lk67=look;look=function(mx,my,k){const s=REG.sens>0?REG.sens:1;return _lk67.call(this,mx*s,my*s*(REG.inv?-1:1),k);};
+/* --- la fenêtre --- */
+const RW=(()=>{const w=document.createElement('div');w.id='regWin';w.hidden=true;
+  w.style.cssText='position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(10,8,20,.72);padding:12px;';
+  w.innerHTML='<div style="background:#1e1a2e;border:2px solid #63f3ff;border-radius:14px;max-width:520px;width:100%;max-height:calc(100% - 8px);overflow:auto;padding:16px;color:#f4f0ff;font:15px/1.4 system-ui,sans-serif">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:20px">Réglages</b><button type="button" class="btn small" id="rwClose">Fermer</button></div>'
+    +'<div id="rwBody"></div></div>';
+  document.body.appendChild(w);
+  w.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape')w.hidden=true;});
+  w.addEventListener('click',e=>{if(e.target===w)w.hidden=true;});
+  w.querySelector('#rwClose').addEventListener('click',()=>{w.hidden=true;});return w;})();
+function regRow(B,titre,aide,choix,actuel,f){const d=nwE('div','margin:12px 0 0;padding-top:10px;border-top:1px solid #3a3450');
+  d.append(nwE('div','font-weight:bold',titre));if(aide)d.append(nwE('div','font-size:12.5px;opacity:.75;margin:2px 0 4px',aide));
+  const r=nwE('div','display:flex;flex-wrap:wrap;gap:6px;margin-top:4px');
+  for(const [v,l] of choix){const b=nwBtn((v===actuel?'> ':'')+l,()=>{f(v);regRender();},v===actuel);b.setAttribute('aria-pressed',String(v===actuel));r.append(b);}
+  d.append(r);B.append(d);}
+function regRender(){const B=RW.querySelector('#rwBody');if(!B)return;B.textContent='';
+  regRow(B,'Écran','Le mode étroit est fait pour les téléphones : tout est plus petit et on voit plus large.',[['auto','Automatique'],['etroit','Étroit'],['normal','Normal']],ETR.pref,
+    v=>{ETR.pref=v;try{localStorage.setItem('co-ecran',v);}catch(e){}etrApply();try{resize();}catch(e){}});
+  if(etrFsOk())regRow(B,'Plein écran','Le jeu remplit tout l’écran.',[[true,'Oui'],[false,'Non']],etrFs(),v=>{if(v&&!etrFs())etrFsGo();else if(!v&&etrFs())etrFsStop();setTimeout(regRender,400);});
+  else regRow(B,'Plein écran','Sur iPhone : bouton Partager, puis « Sur l’écran d’accueil ». Le jeu s’ouvre alors en plein écran.',[],null,()=>{});
+  regRow(B,'Son','',[[true,'Oui'],[false,'Non']],soundOn,v=>{if(v!==soundOn){const h=$('#btnSound');if(h)h.click();}});
+  regRow(B,'Vue','',[['third','Derrière Ballis'],['first','Par les yeux de Ballis']],camMode,v=>{if(v!==camMode)toggleView();});
+  regRow(B,'Champ de vision','Plus il est large, plus on voit de choses sur les côtés.',[[62,'Serré'],[72,'Normal'],[84,'Large'],[96,'Très large']],regFov(),
+    v=>{REG.fov=v;regSave();camera.fov=v;camera.updateProjectionMatrix();});
+  regRow(B,'Vitesse pour regarder','Avec la souris, le doigt ou la manette.',[[.5,'Lente'],[1,'Normale'],[1.6,'Rapide'],[2.4,'Très rapide']],REG.sens,v=>{REG.sens=v;regSave();});
+  regRow(B,'Regard inversé','Pousser vers le haut fait regarder en bas, comme dans un avion.',[[false,'Non'],[true,'Oui']],!!REG.inv,v=>{REG.inv=v;regSave();});
+  const d=nwE('div','margin:14px 0 0;padding-top:10px;border-top:1px solid #3a3450;display:flex;flex-wrap:wrap;gap:6px');
+  d.append(nwBtn('Sauvegarder maintenant',()=>{const h=$('#btnSave');if(h)h.click();}));B.append(d);}
+function regShow(){regRender();RW.hidden=false;setTimeout(()=>{const c=RW.querySelector('#rwClose');if(c)c.focus();},0);}
+/* --- le bouton « Réglages », dans le menu et sur l'accueil --- */
+{const A=$('#overlay .ov-actions');if(A){const b=document.createElement('button');b.id='ovReg';b.type='button';b.className='btn ghost';b.textContent='Réglages';b.addEventListener('click',()=>regShow());A.appendChild(b);}}
+/* la manette : B ou Start ferment la fenêtre */
+const _gp67=gpP1;gpP1=function(p,dt){if(!RW.hidden){if(gpEdge(p,1)||gpEdge(p,9))RW.hidden=true;const g=GP.p1;g.f=g.s=0;g.up=g.down=false;gpRelease();return;}return _gp67.apply(this,arguments);};
+try{camera.fov=regFov();camera.updateProjectionMatrix();}catch(e){}
 
 function djPay(M){const v=new Set(M.mix.ev.map(e=>e[1]+e[2])).size;let pay=8+Math.min(20,v*2);if(festival())pay*=2;
   S.djDay=S.cal.d;S.stats.djGig=(S.stats.djGig||0)+1;earn(pay);bigText('Bravo DJ Ballis !',2);

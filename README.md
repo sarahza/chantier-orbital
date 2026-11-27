@@ -6,7 +6,11 @@ Fore le sol rouge de Balis, construis ta base, fais le plein de ta fusée et dé
 
 ### ▶️ [Jouer maintenant](https://sarahza.github.io/chantier-orbital/)
 
-Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordinateur. Et tu peux jouer **à deux**, sur le même écran ou sur deux appareils, au clavier ou **à la manette** !
+Gratuit, rien à installer : ça marche directement dans le navigateur d'un ordinateur ou d'un **téléphone**. Et tu peux jouer **à deux**, sur le même écran ou sur deux appareils, au clavier ou **à la manette** !
+
+📱 **Sur téléphone** : le jeu passe tout seul en **mode écran étroit**. La vue est plus large, les boutons sont plus petits et le jeu remplit tout l'écran. Touche le cadre « Ballis » en haut à gauche pour voir tous les détails. Dans le menu, la fenêtre « Réglages » choisit entre écran automatique, étroit ou normal. Sur iPhone, pour jouer en plein écran : bouton Partager, puis « Sur l'écran d'accueil ».
+
+⚙️ **Les réglages** : dans le menu (Échap ou bouton « Menu »), le bouton « Réglages » permet de choisir l'écran, le plein écran, le son, la vue, le champ de vision, la vitesse pour regarder et le regard inversé.
 
 ### 🤖 [LeftControl, ton agent IA](https://sarahza.github.io/chantier-orbital/agent/)
 
