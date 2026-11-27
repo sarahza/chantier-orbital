@@ -60,6 +60,9 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 5px; font-si
 .bar { height: 4px; background: var(--panel-2); border-radius: 99px; overflow: hidden; margin-top: 10px; }
 .bar > div { height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 12px var(--accent); transition: width .2s; }
 #brainStatus { display: block; margin-top: 6px; }
+#geminiBox { margin-top: 4px; }
+#geminiBox[hidden] { display: none; }
+input[type=password] { width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line); background: rgba(0, 0, 0, .35); color: var(--text); font: inherit; }
 .st-ok { color: var(--ok); } .st-warn { color: var(--warn); } .st-err { color: var(--err); }
 details summary { cursor: pointer; font-weight: 600; margin: 12px 0 6px; font-size: 14px; }
 
@@ -121,7 +124,7 @@ footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 0 
   <canvas id="logo" width="104" height="104" aria-hidden="true"></canvas>
   <div class="brand">
     <h1>LEFT<span>CONTROL</span></h1>
-    <p>Agent IA local. Il tourne dans ton ordinateur, sans compte et sans clé.</p>
+    <p>Agent IA. Son cerveau tourne sur les serveurs gratuits de Google, ou directement dans ton ordinateur.</p>
   </div>
 </header>
 
@@ -132,13 +135,24 @@ footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 0 
     <div class="brain">
       <div>
         <select id="model" aria-label="Choix du cerveau">
-          <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Léger — environ 1 Go, pour les ordinateurs modestes</option>
-          <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC" selected>Équilibré — environ 2 Go, conseillé</option>
-          <option value="Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC">Codeur — environ 2 Go, meilleur pour programmer</option>
-          <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">Puissant — environ 5 Go, bonne carte graphique</option>
+          <optgroup label="Sur les serveurs de Google (gratuit, clé gratuite)">
+            <option value="gemini:flash" selected>Gemini Flash — très intelligent, conseillé</option>
+            <option value="gemini:flash-lite">Gemini Flash-Lite — plus rapide, plus de messages gratuits</option>
+          </optgroup>
+          <optgroup label="Dans ton ordinateur (sans clé, carte graphique)">
+            <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Léger — environ 1 Go, pour les ordinateurs modestes</option>
+            <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC">Équilibré — environ 2 Go</option>
+            <option value="Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC">Codeur — environ 2 Go, meilleur pour programmer</option>
+            <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">Puissant — environ 5 Go, bonne carte graphique</option>
+          </optgroup>
         </select>
+        <div id="geminiBox">
+          <label for="geminiKey">Clé Gemini</label>
+          <input type="password" id="geminiKey" placeholder="Colle ta clé ici (elle commence souvent par AIza…)" autocomplete="off" spellcheck="false">
+          <small>Gratuite, sans carte bancaire : connecte-toi avec ton compte Google sur <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> et clique sur « Create API key ». La clé reste dans ce navigateur et n'est envoyée qu'à Google. Avec la version gratuite, Google peut utiliser tes messages pour améliorer ses produits : n'y mets pas d'informations personnelles.</small>
+        </div>
         <div class="bar" aria-hidden="true"><div id="bar"></div></div>
-        <small id="brainStatus">En veille. Au premier réveil, le cerveau est téléchargé puis gardé dans le navigateur.</small>
+        <small id="brainStatus">En veille.</small>
       </div>
       <div class="row"><button id="wake" class="primary">Réveiller LeftControl</button></div>
     </div>
@@ -276,7 +290,7 @@ footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 0 
     </div>
   </section>
 </main>
-<footer>LeftControl fonctionne entièrement dans ton navigateur. Le mode Recherche consulte Wikipédia.</footer>
+<footer>Avec Gemini, tes messages sont traités par Google. Avec un cerveau local, tout reste dans ton ordinateur. Le mode Recherche consulte Wikipédia.</footer>
 </div>
 
 <script type="module">
@@ -284,6 +298,7 @@ import * as B from "./batisseur.js";
 import * as O from "./outils.js";
 
 const WEBLLM_URL = "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.87/+esm";
+const GENAI_URL = "https://cdn.jsdelivr.net/npm/@google/genai@3.2.0/+esm";
 const ACCENT = [3, 187, 133];
 const $ = (id) => document.getElementById(id);
 const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -454,23 +469,82 @@ const persona = $("persona");
 persona.value = store.get("lc-persona", PERSONA_DEFAUT);
 persona.oninput = () => store.set("lc-persona", persona.value);
 $("resetPersona").onclick = () => { persona.value = PERSONA_DEFAUT; store.set("lc-persona", PERSONA_DEFAUT); };
-const systeme = (m) => persona.value.trim() + "\n\n" + MISSIONS[m];
+// Les petits cerveaux locaux doivent écrire des programmes courts ; Gemini peut faire plus grand.
+const systeme = (m) => persona.value.trim() + "\n\n" + (estGemini() ? MISSIONS[m].replace("Garde le programme court et simple (moins de 150 lignes). ", "") : MISSIONS[m]);
 
 // =====================================================================
-//  Cerveau (IA locale WebLLM)
+//  Cerveau : Gemini (serveurs Google) ou IA locale (WebLLM)
 // =====================================================================
 let webllm = null, engine = null, engineModel = null, loading = false, busy = false;
-const modelSel = $("model");
-modelSel.value = store.get("lc-model", modelSel.value);
-modelSel.onchange = () => { store.set("lc-model", modelSel.value); if (engineModel && engineModel !== modelSel.value) setStatus("Cerveau changé : clique sur « Réveiller » pour le charger.", "st-warn"); };
+let genai = null, gemini = null; // gemini = { ai, modele, cle, choix }
+let geminiCtrl = null;
+const modelSel = $("model"), cleInput = $("geminiKey");
+modelSel.value = store.get("lc-model2", modelSel.value);
+if (!modelSel.value) modelSel.value = "gemini:flash";
+cleInput.value = store.get("lc-gemini-key", "");
+const estGemini = () => modelSel.value.startsWith("gemini:");
+const estPret = () => (estGemini() ? gemini && gemini.choix === modelSel.value && gemini.cle === cleInput.value.trim() : engine && engineModel === modelSel.value);
+
+function majCerveau() {
+  $("geminiBox").hidden = !estGemini();
+  if (estPret()) return;
+  $("bar").style.width = "0"; $("wake").textContent = "Réveiller LeftControl";
+  setStatus(estGemini()
+    ? (cleInput.value.trim() ? "Clique sur « Réveiller » pour te connecter à Gemini." : "Colle ta clé Gemini gratuite, puis clique sur « Réveiller ».")
+    : "En veille. Au premier réveil, ce cerveau est téléchargé (puis gardé dans le navigateur).", "");
+}
+modelSel.onchange = () => { store.set("lc-model2", modelSel.value); majCerveau(); };
+cleInput.oninput = () => { store.set("lc-gemini-key", cleInput.value.trim()); majCerveau(); };
 
 function setStatus(text, cls = "") { const s = $("brainStatus"); s.textContent = text; s.className = cls; }
 
+// Choisit le meilleur modèle Gemini disponible pour cette clé (les noms changent avec les versions).
+function choisirModele(noms, lite) {
+  const alias = lite ? "gemini-flash-lite-latest" : "gemini-flash-latest";
+  if (noms.includes(alias)) return alias;
+  const version = (n) => parseFloat((/gemini-(\d+(?:\.\d+)?)/.exec(n) || [])[1] || 0);
+  const candidats = noms.filter((n) => /^gemini-\d/.test(n) && n.includes("flash") && (lite ? n.includes("lite") : !n.includes("lite"))
+    && !/(image|tts|audio|live|embedding|thinking|exp|learn)/.test(n));
+  candidats.sort((x, y) => version(y) - version(x) || x.includes("preview") - y.includes("preview") || x.length - y.length);
+  return candidats[0] || (lite ? "gemini-flash-lite-latest" : "gemini-flash-latest");
+}
+
+function messageGemini(e) {
+  const st = e?.status ?? 0, msg = String(e?.message || e);
+  if (st === 400 && /api key|API_KEY/i.test(msg) || st === 401) return "La clé Gemini n'est pas valide. Vérifie-la sur aistudio.google.com/apikey.";
+  if (st === 403) return "Cette clé n'a pas le droit d'utiliser Gemini (elle a peut-être été désactivée).";
+  if (st === 429) return "Limite gratuite atteinte pour le moment. Attends une minute (ou demain si c'est la limite du jour)" + (modelSel.value === "gemini:flash" ? ", ou choisis Gemini Flash-Lite." : ".");
+  if (st >= 500) return "Les serveurs de Google sont occupés. Réessaie dans un instant.";
+  if (/fetch|network|Failed/i.test(msg)) return "Impossible de joindre Google. Vérifie ta connexion internet.";
+  return msg;
+}
+
 async function reveiller() {
   if (loading) throw new Error("LeftControl est encore en train de se réveiller, patiente un peu.");
-  if (engine && engineModel === modelSel.value) return;
+  if (estPret()) return;
+  if (estGemini()) {
+    const cle = cleInput.value.trim();
+    if (!cle) { setStatus("Colle d'abord ta clé Gemini gratuite (lien juste au-dessus).", "st-err"); cleInput.focus(); throw new Error("il manque la clé Gemini (voir en haut de la page)."); }
+    loading = true; $("wake").disabled = true;
+    try {
+      setStatus("Connexion à Gemini…", "st-warn"); $("bar").style.width = "40%";
+      genai ??= await import(GENAI_URL);
+      const ai = new genai.GoogleGenAI({ apiKey: cle });
+      const noms = [];
+      for await (const m of await ai.models.list()) if ((m.supportedActions || []).includes("generateContent")) noms.push(String(m.name).replace(/^models\//, ""));
+      const modele = choisirModele(noms, modelSel.value === "gemini:flash-lite");
+      gemini = { ai, modele, cle, choix: modelSel.value };
+      $("bar").style.width = "100%"; $("wake").textContent = "Réveillé";
+      setStatus(`LeftControl est réveillé et prêt (Gemini : ${modele}).`, "st-ok");
+    } catch (e) {
+      gemini = null; $("bar").style.width = "0";
+      const m = messageGemini(e); setStatus("Impossible de se connecter à Gemini : " + m, "st-err");
+      throw new Error(m);
+    } finally { loading = false; $("wake").disabled = false; }
+    return;
+  }
   if (!("gpu" in navigator)) {
-    setStatus("Ce navigateur ne peut pas faire tourner l'IA (WebGPU manquant). Essaie Chrome ou Edge à jour, sur ordinateur.", "st-err");
+    setStatus("Ce navigateur ne peut pas faire tourner l'IA locale (WebGPU manquant). Choisis plutôt Gemini.", "st-err");
     throw new Error("WebGPU indisponible");
   }
   loading = true; $("wake").disabled = true;
@@ -491,14 +565,15 @@ async function reveiller() {
     $("wake").textContent = "Réveillé";
   } catch (e) {
     engine = null; engineModel = null;
-    setStatus("Impossible de réveiller LeftControl : " + (e?.message || e) + ". Essaie un cerveau plus léger.", "st-err");
+    setStatus("Impossible de réveiller LeftControl : " + (e?.message || e) + ". Essaie un cerveau plus léger, ou Gemini.", "st-err");
     throw e;
   } finally { loading = false; $("wake").disabled = false; }
 }
 $("wake").onclick = () => reveiller().catch(() => {});
+majCerveau();
 
 // La carte graphique peut « décrocher » (souvent par manque de mémoire) : la bibliothèque
-// efface alors le cerveau. On le détecte, on recharge une fois, puis on conseille plus léger.
+// efface alors le cerveau. On le détecte, on recharge une fois, puis on conseille autre chose.
 const cerveauPerdu = (e) => e?.name === "ModelNotLoadedError" || /model not loaded|device (was )?lost/i.test(e?.message || "");
 function endormir() {
   try { engine?.unload(); } catch {}
@@ -506,9 +581,38 @@ function endormir() {
   $("bar").style.width = "0"; $("wake").textContent = "Réveiller LeftControl";
 }
 
+// Gemini : l'historique devient des « contents » (rôles user / model), les instructions vont à part.
+async function genererGemini(mission, historique, onTexte, options) {
+  const contents = [];
+  for (const m of historique) {
+    const role = m.role === "assistant" ? "model" : "user", der = contents.at(-1);
+    if (der && der.role === role) der.parts[0].text += "\n\n" + m.content; else contents.push({ role, parts: [{ text: m.content }] });
+  }
+  geminiCtrl = new AbortController();
+  const config = {
+    systemInstruction: systeme(mission),
+    temperature: options.temperature ?? 0.6,
+    // la réflexion interne compte dans la limite : on laisse de la marge
+    maxOutputTokens: Math.max(options.max_tokens ?? 2048, mission === "code" ? 32768 : 8192),
+    abortSignal: geminiCtrl.signal,
+  };
+  if (options.response_format) { config.responseMimeType = "application/json"; config.responseJsonSchema = JSON.parse(options.response_format.schema); }
+  try {
+    const flux = await gemini.ai.models.generateContentStream({ model: gemini.modele, contents, config });
+    let texte = "";
+    for await (const morceau of flux) { texte += morceau.text || ""; onTexte(texte); }
+    if (!texte.trim()) throw new Error("Gemini n'a rien répondu (la demande a peut-être été bloquée). Reformule ta demande.");
+    return texte;
+  } catch (e) {
+    if (stopDemande || e?.name === "AbortError") throw new Error("arrêté");
+    throw new Error(messageGemini(e));
+  } finally { geminiCtrl = null; }
+}
+
 async function generer(mission, historique, onTexte, options = {}) {
   for (let essai = 0; ; essai++) {
     await reveiller();
+    if (estGemini()) return genererGemini(mission, historique, onTexte, options);
     try {
       const chunks = await engine.chat.completions.create({
         messages: [{ role: "system", content: systeme(mission) }, ...historique],
@@ -523,8 +627,8 @@ async function generer(mission, historique, onTexte, options = {}) {
       endormir();
       if (essai >= 1) {
         const i = modelSel.selectedIndex;
-        if (i > 0) { modelSel.selectedIndex = i - 1; store.set("lc-model", modelSel.value); }
-        const conseil = i > 0 ? `J'ai sélectionné le cerveau « ${modelSel.options[modelSel.selectedIndex].text.split(" —")[0]} » : clique sur Réveiller pour l'essayer.` : "Ferme les autres onglets et programmes, puis réessaie.";
+        if (i > 0) { modelSel.selectedIndex = i - 1; store.set("lc-model2", modelSel.value); majCerveau(); }
+        const conseil = i > 0 ? `J'ai sélectionné « ${modelSel.options[modelSel.selectedIndex].text.split(" —")[0]} » : clique sur Réveiller pour l'essayer.` : "Ferme les autres onglets et programmes, puis réessaie.";
         setStatus("La carte graphique de cet ordinateur n'a pas assez de mémoire pour ce cerveau. " + conseil, "st-err");
         throw new Error("la carte graphique a manqué de mémoire. " + conseil);
       }
@@ -539,7 +643,7 @@ function setBusy(on) {
   document.querySelectorAll(".stop").forEach((b) => (b.disabled = !on));
 }
 let stopDemande = false;
-document.querySelectorAll(".stop").forEach((b) => (b.onclick = () => { stopDemande = true; engine?.interruptGenerate(); }));
+document.querySelectorAll(".stop").forEach((b) => (b.onclick = () => { stopDemande = true; engine?.interruptGenerate(); geminiCtrl?.abort(); }));
 
 // =====================================================================
 //  Modes et sous-onglets
@@ -699,7 +803,8 @@ async function chercherSources(question, statut) {
 //  Modes conversationnels : Recherche, Code (programme), Business
 // =====================================================================
 const historiques = {};
-const LIMITE_HISTO = 8; // l'IA locale a une petite mémoire : on garde les derniers messages
+// L'IA locale a une petite mémoire : on garde les derniers messages. Gemini en retient beaucoup plus.
+const limiteHisto = () => (estGemini() ? 30 : 8);
 const ACCUEIL = {
   recherche: "Réveille LeftControl, puis pose ta question. Il fait plusieurs recherches dans Wikipédia et cite ses sources.",
   code: "Décris le programme que tu veux : LeftControl l'écrit, le teste et corrige lui-même les erreurs.",
@@ -726,7 +831,7 @@ async function testerEtCorriger(demande, rep, body, ecrire) {
     if (!erreurs.length) return { rep, bilan: note(essai ? `Programme testé et corrigé tout seul (${essai} correction${essai > 1 ? "s" : ""}) : aucune erreur.` : "Programme testé : aucune erreur au démarrage.", "st-ok") };
     const liste = erreurs.slice(0, 3).join(" | ");
     if (essai >= MAX_CORRECTIONS || stopDemande) return { rep, bilan: note(`Il reste une erreur que je n'ai pas réussi à corriger : ${liste}. Demande-moi de la corriger.`, "st-err") };
-    if (prog.code.length > 6500) return { rep, bilan: note(`Erreur trouvée : ${liste}. Le programme est trop long pour que je le corrige tout seul : demande-moi de corriger cette erreur.`, "st-err") };
+    if (prog.code.length > (estGemini() ? 150000 : 6500)) return { rep, bilan: note(`Erreur trouvée : ${liste}. Le programme est trop long pour que je le corrige tout seul : demande-moi de corriger cette erreur.`, "st-err") };
     etape(`Erreur trouvée : ${liste}. Je corrige (essai ${essai + 1}/${MAX_CORRECTIONS})…`);
     const correction = await generer("code", [
       { role: "user", content: demande },
@@ -759,7 +864,7 @@ for (const m of ["recherche", "code", "business"]) {
     statut("LeftControl réfléchit…");
     setBusy(true); stopDemande = false;
     try {
-      let sources = [], messages = historiques[m].slice(-LIMITE_HISTO).map(({ role, content }) => ({ role, content }));
+      let sources = [], messages = historiques[m].slice(-limiteHisto()).map(({ role, content }) => ({ role, content }));
       if (m === "recherche" && $("useWiki").checked) {
         try { sources = await chercherSources(texte, statut); }
         catch (e) { if (stopDemande) throw e; sources = []; }
